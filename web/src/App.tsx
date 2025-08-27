@@ -3,7 +3,6 @@ import {
   Music,
   Search,
   Library,
-  Plus,
   Heart,
   SkipBack,
   Play,
@@ -32,26 +31,20 @@ import {
   TooltipContent,
 } from "./components/ui/tooltip";
 import { Sheet, SheetContent, SheetClose } from "./components/ui/sheet";
+import bandcampData from "./data/bandcamp.json";
 
-type Track = {
+type Release = {
   id: string;
   title: string;
   artist: string;
+  releaseDate: string;
   cover: string;
-  src: string;
+  url: string;
   duration: string;
+  type: "album" | "ep" | "compilation";
 };
 
-const MOCK_TRACKS: Track[] = Array.from({ length: 16 }).map((_, i) => ({
-  id: String(i + 1),
-  title:
-    ["Saiyaara", "Ehsas", "Radhe Radhe", "Raja Hindustani"][i % 4] +
-    ` ${i + 1}`,
-  artist: ["Various Artists", "Pritam", "Nadeem-Shravan"][i % 3],
-  cover: `https://picsum.photos/seed/cover${i}/400/400`,
-  src: `https://cdn.pixabay.com/download/audio/2022/10/24/audio_0f7b6f8f52.mp3?filename=sample-${i}.mp3`,
-  duration: `${3 + (i % 2)}:${(30 + i) % 60}`,
-}));
+const RELEASES: Release[] = bandcampData as Release[];
 
 function useThemeToggle() {
   const [theme, setTheme] = useState<"light" | "dark">(() =>
@@ -72,10 +65,10 @@ function Sidebar() {
   return (
     <aside className="hidden md:flex w-64 shrink-0 flex-col gap-6 p-4 border-r border-neutral-800">
       <div className="flex items-center gap-2 text-xl font-semibold">
-        <div className="size-8 grid place-items-center rounded bg-neutral-800">
-          <Music className="size-5" />
+        <div className="size-8 grid place-items-center rounded bg-gradient-to-br from-blue-500 to-purple-600">
+          <span className="text-white font-bold text-xs">416</span>
         </div>
-        infinitunes
+        Format416 Recordings
       </div>
 
       <nav className="flex flex-col gap-1">
@@ -83,47 +76,47 @@ function Sidebar() {
           className="flex items-center gap-3 px-2 py-2 rounded hover:bg-neutral-900 text-neutral-300"
           href="#"
         >
-          <Search className="size-4" /> Top Albums
+          <Library className="size-4" /> All Releases
         </a>
         <a
           className="flex items-center gap-3 px-2 py-2 rounded hover:bg-neutral-900 text-neutral-300"
           href="#"
         >
-          <List className="size-4" /> Top Charts
+          <Music className="size-4" /> Albums
         </a>
         <a
           className="flex items-center gap-3 px-2 py-2 rounded hover:bg-neutral-900 text-neutral-300"
           href="#"
         >
-          <Library className="size-4" /> Top Playlists
+          <List className="size-4" /> EPs & Singles
         </a>
         <a
           className="flex items-center gap-3 px-2 py-2 rounded hover:bg-neutral-900 text-neutral-300"
           href="#"
         >
-          <Library className="size-4" /> Podcasts
+          <Search className="size-4" /> Artists
         </a>
         <a
           className="flex items-center gap-3 px-2 py-2 rounded hover:bg-neutral-900 text-neutral-300"
-          href="#"
+          href="https://format416.bandcamp.com/"
+          target="_blank"
+          rel="noopener noreferrer"
         >
-          <Library className="size-4" /> Top Artists
-        </a>
-        <a
-          className="flex items-center gap-3 px-2 py-2 rounded hover:bg-neutral-900 text-neutral-300"
-          href="#"
-        >
-          <Library className="size-4" /> Radio
+          <Heart className="size-4" /> Bandcamp Store
         </a>
       </nav>
 
       <div className="mt-auto">
-        <Button variant="outline" className="w-full justify-center gap-2">
-          <Plus className="size-4" /> Create Playlist
+        <Button
+          variant="outline"
+          className="w-full justify-center gap-2"
+          onClick={() =>
+            window.open("https://format416.bandcamp.com/", "_blank")
+          }
+        >
+          <Heart className="size-4" /> Visit Store
         </Button>
-        <p className="mt-2 text-xs muted">
-          You need to be logged in to create a playlist.
-        </p>
+        <p className="mt-2 text-xs muted">Support our artists on Bandcamp</p>
       </div>
     </aside>
   );
@@ -154,7 +147,10 @@ function Navbar({
         </Button>
       </div>
       <div className="flex items-center gap-2 text-sm text-neutral-400">
-        Discover
+        <div className="md:hidden size-6 grid place-items-center rounded bg-gradient-to-br from-blue-500 to-purple-600 mr-2">
+          <span className="text-white font-bold text-xs">416</span>
+        </div>
+        Format416 Catalog
       </div>
       <div className="ml-auto flex items-center gap-2">
         <TooltipProvider>
@@ -208,19 +204,40 @@ function Navbar({
   );
 }
 
-function AlbumCard({ track, onPlay }: { track: Track; onPlay: () => void }) {
+function AlbumCard({
+  release,
+  onPlay,
+}: {
+  release: Release;
+  onPlay: () => void;
+}) {
+  const handleCardClick = (e: React.MouseEvent) => {
+    if (
+      e.target === e.currentTarget ||
+      !(e.target as HTMLElement).closest("button")
+    ) {
+      window.open(release.url, "_blank");
+    }
+  };
+
   return (
-    <Card className="group bg-neutral-900/60">
+    <Card
+      className="group bg-neutral-900/60 cursor-pointer hover:bg-neutral-900/80 transition-colors"
+      onClick={handleCardClick}
+    >
       <div className="relative">
         <img
-          src={track.cover}
-          alt="cover"
+          src={release.cover}
+          alt={`${release.title} cover`}
           className="w-full h-44 object-cover rounded-xl"
         />
         <Button
-          aria-label="Play album"
-          title="Play album"
-          onClick={onPlay}
+          aria-label={`Play ${release.title}`}
+          title={`Play ${release.title}`}
+          onClick={(e) => {
+            e.stopPropagation();
+            onPlay();
+          }}
           size="icon"
           className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition"
         >
@@ -228,8 +245,13 @@ function AlbumCard({ track, onPlay }: { track: Track; onPlay: () => void }) {
         </Button>
       </div>
       <div className="p-3">
-        <div className="text-sm font-medium truncate">{track.title}</div>
-        <div className="text-xs text-neutral-400 truncate">{track.artist}</div>
+        <div className="text-sm font-medium truncate">{release.title}</div>
+        <div className="text-xs text-neutral-400 truncate">
+          {release.artist}
+        </div>
+        <div className="text-xs text-neutral-500 truncate">
+          {release.type} • {release.duration}
+        </div>
       </div>
     </Card>
   );
@@ -238,16 +260,22 @@ function AlbumCard({ track, onPlay }: { track: Track; onPlay: () => void }) {
 function AlbumGrid({
   onSelect,
   title = "Discover",
+  releases = RELEASES,
 }: {
   onSelect: (index: number) => void;
   title?: string;
+  releases?: Release[];
 }) {
   return (
     <section className="p-4">
       <h2 className="text-lg font-semibold mb-3">{title}</h2>
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-        {MOCK_TRACKS.map((t, idx) => (
-          <AlbumCard key={t.id} track={t} onPlay={() => onSelect(idx)} />
+        {releases.map((release, idx) => (
+          <AlbumCard
+            key={release.id}
+            release={release}
+            onPlay={() => onSelect(idx)}
+          />
         ))}
       </div>
     </section>
@@ -255,7 +283,7 @@ function AlbumGrid({
 }
 
 function AudioPlayer({
-  track,
+  release,
   isPlaying,
   currentTime,
   duration,
@@ -266,7 +294,7 @@ function AudioPlayer({
   onSeek,
   onVolume,
 }: {
-  track: Track;
+  release: Release;
   isPlaying: boolean;
   currentTime: number;
   duration: number;
@@ -281,14 +309,14 @@ function AudioPlayer({
     <footer className="h-20 border-t border-neutral-800 px-4 flex items-center gap-4 sticky bottom-0 bg-neutral-950/80 backdrop-blur supports-[backdrop-filter]:bg-neutral-950/60">
       <div className="flex items-center gap-3 min-w-0">
         <img
-          src={track.cover}
+          src={release.cover}
           className="size-12 rounded object-cover"
           alt="cover"
         />
         <div className="min-w-0">
-          <div className="text-sm truncate">{track.title}</div>
+          <div className="text-sm truncate">{release.title}</div>
           <div className="text-xs text-neutral-400 truncate">
-            {track.artist}
+            {release.artist}
           </div>
         </div>
         <Heart className="size-4 text-neutral-400" />
@@ -371,11 +399,12 @@ export default function App() {
     audioRef.current = new Audio();
   }
 
-  const currentTrack = useMemo(() => MOCK_TRACKS[currentIndex], [currentIndex]);
+  const currentRelease = useMemo(() => RELEASES[currentIndex], [currentIndex]);
 
   useEffect(() => {
     const audio = audioRef.current!;
-    audio.src = currentTrack.src;
+    // For demo purposes, we'll use a placeholder audio source
+    audio.src = "https://www.soundjay.com/misc/sounds/button-1.mp3";
     audio.volume = volume;
     const onLoaded = () => setDuration(audio.duration || 0);
     const onTime = () => setCurrentTime(audio.currentTime || 0);
@@ -387,12 +416,12 @@ export default function App() {
       audio.removeEventListener("loadedmetadata", onLoaded);
       audio.removeEventListener("timeupdate", onTime);
     };
-  }, [currentTrack, isPlaying, volume]);
+  }, [currentRelease, isPlaying, volume]);
 
   const handlePlayPause = () => setIsPlaying((p) => !p);
   const handlePrev = () =>
-    setCurrentIndex((i) => (i - 1 + MOCK_TRACKS.length) % MOCK_TRACKS.length);
-  const handleNext = () => setCurrentIndex((i) => (i + 1) % MOCK_TRACKS.length);
+    setCurrentIndex((i) => (i - 1 + RELEASES.length) % RELEASES.length);
+  const handleNext = () => setCurrentIndex((i) => (i + 1) % RELEASES.length);
   const handleSeek = (time: number) => {
     const audio = audioRef.current!;
     audio.currentTime = time;
@@ -420,13 +449,27 @@ export default function App() {
       <div className="grid grid-cols-[0,1fr] md:grid-cols-[16rem,1fr]">
         <Sidebar />
         <main className="min-h-[calc(100vh-5rem)] overflow-y-auto">
-          <AlbumGrid title="Discover" onSelect={enqueueAndPlay} />
-          <AlbumGrid title="Trending Today" onSelect={enqueueAndPlay} />
-          <AlbumGrid title="Most Searched Songs" onSelect={enqueueAndPlay} />
+          <AlbumGrid
+            title="Latest Releases"
+            releases={RELEASES.slice(0, 6)}
+            onSelect={enqueueAndPlay}
+          />
+          <AlbumGrid
+            title="Full Albums"
+            releases={RELEASES.filter((r) => r.type === "album")}
+            onSelect={enqueueAndPlay}
+          />
+          <AlbumGrid
+            title="EPs & Singles"
+            releases={RELEASES.filter(
+              (r) => r.type === "ep" || r.type === "compilation"
+            )}
+            onSelect={enqueueAndPlay}
+          />
         </main>
       </div>
       <AudioPlayer
-        track={currentTrack}
+        release={currentRelease}
         isPlaying={isPlaying}
         currentTime={currentTime}
         duration={duration}
@@ -441,10 +484,10 @@ export default function App() {
       <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
         <SheetContent side="left">
           <div className="mb-4 flex items-center gap-2 text-lg font-semibold">
-            <div className="size-8 grid place-items-center rounded bg-neutral-800">
-              <Music className="size-5" />
+            <div className="size-8 grid place-items-center rounded bg-gradient-to-br from-blue-500 to-purple-600">
+              <span className="text-white font-bold text-xs">416</span>
             </div>
-            infinitunes
+            Format416 Recordings
           </div>
           <div className="h-[calc(100vh-6rem)] overflow-y-auto pr-2">
             <Sidebar />
@@ -464,7 +507,7 @@ export default function App() {
           <div className="space-y-2">
             {(queue.length
               ? queue
-              : [currentIndex, ...MOCK_TRACKS.map((_, i) => i).slice(0, 10)]
+              : [currentIndex, ...RELEASES.map((_, i) => i).slice(0, 10)]
             ).map((idx) => (
               <button
                 key={`q-${idx}`}
@@ -472,16 +515,14 @@ export default function App() {
                 className="w-full flex items-center gap-3 text-left p-2 rounded hover:bg-neutral-900"
               >
                 <img
-                  src={MOCK_TRACKS[idx].cover}
-                  alt={MOCK_TRACKS[idx].title}
+                  src={RELEASES[idx].cover}
+                  alt={RELEASES[idx].title}
                   className="size-10 rounded object-cover"
                 />
                 <div className="min-w-0">
-                  <div className="text-sm truncate">
-                    {MOCK_TRACKS[idx].title}
-                  </div>
+                  <div className="text-sm truncate">{RELEASES[idx].title}</div>
                   <div className="text-xs text-neutral-400 truncate">
-                    {MOCK_TRACKS[idx].artist}
+                    {RELEASES[idx].artist}
                   </div>
                 </div>
               </button>

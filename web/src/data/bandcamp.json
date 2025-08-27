@@ -1,0 +1,82 @@
+[
+  {
+    "id": "aurora-borealis",
+    "title": "Aurora Borealis",
+    "artist": "Jeff Cochran",
+    "releaseDate": "March 7, 2025",
+    "cover": "/artwork/aurora-borealis.jpg",
+    "url": "https://format416.bandcamp.com/album/aurora-borealis",
+    "duration": "42:15",
+    "type": "album"
+  },
+  {
+    "id": "seasons-change-ep",
+    "title": "Seasons Change EP",
+    "artist": "Jeff Cochran",
+    "releaseDate": "February 23, 2023",
+    "cover": "/artwork/seasons-change-ep.jpg",
+    "url": "https://format416.bandcamp.com/album/seasons-change-ep",
+    "duration": "24:32",
+    "type": "ep"
+  },
+  {
+    "id": "jig-is-up-ep",
+    "title": "Jig Is Up EP",
+    "artist": "Jeff Cochran",
+    "releaseDate": "October 15, 2022",
+    "cover": "/artwork/jig-is-up-ep.jpg",
+    "url": "https://format416.bandcamp.com/album/jig-is-up-ep",
+    "duration": "18:45",
+    "type": "ep"
+  },
+  {
+    "id": "dimensionally-displaced-individuals",
+    "title": "Dimensionally Displaced Individuals",
+    "artist": "Salem",
+    "releaseDate": "September 8, 2022",
+    "cover": "/artwork/dimensionally-displaced-individuals.jpg",
+    "url": "https://format416.bandcamp.com/album/dimensionally-displaced-individuals",
+    "duration": "35:20",
+    "type": "album"
+  },
+  {
+    "id": "upcoming-1",
+    "title": "Nocturnal Visions",
+    "artist": "Format416 Artists",
+    "releaseDate": "Coming Soon",
+    "cover": "https://picsum.photos/seed/nocturnal/400/400",
+    "url": "https://format416.bandcamp.com/",
+    "duration": "TBA",
+    "type": "album"
+  },
+  {
+    "id": "upcoming-2",
+    "title": "Midnight Frequencies",
+    "artist": "Various Artists",
+    "releaseDate": "Coming Soon",
+    "cover": "https://picsum.photos/seed/midnight/400/400",
+    "url": "https://format416.bandcamp.com/",
+    "duration": "TBA",
+    "type": "compilation"
+  },
+  {
+    "id": "upcoming-3",
+    "title": "Digital Dreams EP",
+    "artist": "Syntax Error",
+    "releaseDate": "Coming Soon",
+    "cover": "https://picsum.photos/seed/digital/400/400",
+    "url": "https://format416.bandcamp.com/",
+    "duration": "TBA",
+    "type": "ep"
+  },
+  {
+    "id": "upcoming-4",
+    "title": "Neon Nights",
+    "artist": "Cyber Pulse",
+    "releaseDate": "Coming Soon",
+    "cover": "https://picsum.photos/seed/neon/400/400",
+    "url": "https://format416.bandcamp.com/",
+    "duration": "TBA",
+    "type": "album"
+  }
+]
