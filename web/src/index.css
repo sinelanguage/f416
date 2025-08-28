@@ -15,6 +15,13 @@ body,
 
 body {
   @apply bg-neutral-950 text-neutral-100 antialiased;
+  background-image:
+    radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.015) 1px, transparent 0),
+    radial-gradient(circle at 25% 25%, rgba(120, 119, 198, 0.03) 0%, transparent 50%),
+    radial-gradient(circle at 75% 75%, rgba(255, 119, 198, 0.02) 0%, transparent 50%),
+    linear-gradient(135deg, transparent 0%, rgba(59, 130, 246, 0.01) 50%, transparent 100%);
+  background-size: 20px 20px, 100% 100%, 100% 100%, 100% 100%;
+  background-attachment: fixed;
 }
 
 .card {
@@ -23,4 +30,8 @@ body {
 
 .muted {
   @apply text-neutral-400;
+}
+
+.font-jetbrains {
+  font-family: 'JetBrains Mono', 'Consolas', 'Monaco', 'Courier New', monospace;
 }

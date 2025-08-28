@@ -12,25 +12,13 @@ import {
   Shuffle,
   Volume2,
   List,
-  Sun,
-  Moon,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { Button } from "./components/ui/button";
 import { Card } from "./components/ui/card";
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-} from "./components/ui/dropdown-menu";
-import {
-  TooltipProvider,
-  Tooltip,
-  TooltipTrigger,
-  TooltipContent,
-} from "./components/ui/tooltip";
-import { Sheet, SheetContent, SheetClose } from "./components/ui/sheet";
+
+import { Sheet, SheetContent } from "./components/ui/sheet";
 import bandcampData from "./data/bandcamp.json";
 
 type Release = {
@@ -46,95 +34,122 @@ type Release = {
 
 const RELEASES: Release[] = bandcampData as Release[];
 
-function useThemeToggle() {
-  const [theme, setTheme] = useState<"light" | "dark">(() =>
-    document.documentElement.classList.contains("dark") ? "dark" : "light"
+function Sidebar({
+  collapsed,
+  onToggleCollapse,
+  selectedFilter,
+  onFilterChange,
+}: {
+  collapsed: boolean;
+  onToggleCollapse: () => void;
+  selectedFilter: string;
+  onFilterChange: (filter: string) => void;
+}) {
+  // Get unique artists from releases
+  const artists = Array.from(
+    new Set(
+      RELEASES.map((r) => r.artist).filter(
+        (artist) => !artist.includes("Format416") && !artist.includes("Various")
+      )
+    )
   );
-  useEffect(() => {
-    const root = document.documentElement;
-    if (theme === "dark") root.classList.add("dark");
-    else root.classList.remove("dark");
-  }, [theme]);
-  return {
-    theme,
-    toggle: () => setTheme((t) => (t === "dark" ? "light" : "dark")),
-  };
-}
 
-function Sidebar() {
+  const navItems = [
+    { id: "all", label: "All Releases", icon: Library },
+    { id: "album", label: "Albums", icon: Music },
+    { id: "ep", label: "EPs & Singles", icon: List },
+  ];
+
   return (
-    <aside className="hidden md:flex w-64 shrink-0 flex-col gap-6 p-4 border-r border-neutral-800">
-      <div className="flex items-center gap-2 text-xl font-semibold">
-        <div className="size-8 grid place-items-center rounded bg-gradient-to-br from-blue-500 to-purple-600">
-          <span className="text-white font-bold text-xs">416</span>
-        </div>
-        Format416 Recordings
+    <aside
+      className={`hidden md:flex ${
+        collapsed ? "w-16" : "w-64"
+      } shrink-0 flex-col gap-4 p-4 border-r border-neutral-800 transition-all duration-300`}
+    >
+      <div className="flex items-center justify-between">
+        {!collapsed && (
+          <span className="text-sm font-medium text-neutral-400">
+            Navigation
+          </span>
+        )}
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={onToggleCollapse}
+          className="size-8"
+        >
+          {collapsed ? (
+            <ChevronRight className="size-4" />
+          ) : (
+            <ChevronLeft className="size-4" />
+          )}
+        </Button>
       </div>
 
       <nav className="flex flex-col gap-1">
-        <a
-          className="flex items-center gap-3 px-2 py-2 rounded hover:bg-neutral-900 text-neutral-300"
-          href="#"
-        >
-          <Library className="size-4" /> All Releases
-        </a>
-        <a
-          className="flex items-center gap-3 px-2 py-2 rounded hover:bg-neutral-900 text-neutral-300"
-          href="#"
-        >
-          <Music className="size-4" /> Albums
-        </a>
-        <a
-          className="flex items-center gap-3 px-2 py-2 rounded hover:bg-neutral-900 text-neutral-300"
-          href="#"
-        >
-          <List className="size-4" /> EPs & Singles
-        </a>
-        <a
-          className="flex items-center gap-3 px-2 py-2 rounded hover:bg-neutral-900 text-neutral-300"
-          href="#"
-        >
-          <Search className="size-4" /> Artists
-        </a>
-        <a
-          className="flex items-center gap-3 px-2 py-2 rounded hover:bg-neutral-900 text-neutral-300"
-          href="https://format416.bandcamp.com/"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Heart className="size-4" /> Bandcamp Store
-        </a>
-      </nav>
+        {navItems.map((item) => (
+          <button
+            key={item.id}
+            onClick={() => onFilterChange(item.id)}
+            className={`flex items-center gap-3 px-2 py-2 rounded hover:bg-neutral-900 text-left transition-colors ${
+              selectedFilter === item.id
+                ? "bg-neutral-800 text-white"
+                : "text-neutral-300"
+            }`}
+          >
+            <item.icon className="size-4 shrink-0" />
+            {!collapsed && <span>{item.label}</span>}
+          </button>
+        ))}
 
-      <div className="mt-auto">
-        <Button
-          variant="outline"
-          className="w-full justify-center gap-2"
-          onClick={() =>
-            window.open("https://format416.bandcamp.com/", "_blank")
-          }
-        >
-          <Heart className="size-4" /> Visit Store
-        </Button>
-        <p className="mt-2 text-xs muted">Support our artists on Bandcamp</p>
-      </div>
+        {!collapsed && (
+          <>
+            <div className="mt-4 mb-2">
+              <span className="text-sm font-medium text-neutral-400">
+                Artists
+              </span>
+            </div>
+            {artists.map((artist) => (
+              <button
+                key={artist}
+                onClick={() => onFilterChange(`artist:${artist}`)}
+                className={`flex items-center gap-3 px-2 py-2 rounded hover:bg-neutral-900 text-left transition-colors ${
+                  selectedFilter === `artist:${artist}`
+                    ? "bg-neutral-800 text-white"
+                    : "text-neutral-300"
+                }`}
+              >
+                <Search className="size-4 shrink-0" />
+                <span className="truncate">{artist}</span>
+              </button>
+            ))}
+
+            <div className="mt-4 pt-4 border-t border-neutral-800">
+              <a
+                className="flex items-center gap-3 px-2 py-2 rounded hover:bg-neutral-900 text-neutral-300 transition-colors"
+                href="https://format416.bandcamp.com/"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <Heart className="size-4" /> Bandcamp Store
+              </a>
+            </div>
+          </>
+        )}
+      </nav>
     </aside>
   );
 }
 
 function Navbar({
-  onToggleTheme,
-  theme,
   onOpenMobile,
   onOpenQueue,
 }: {
-  onToggleTheme: () => void;
-  theme: "light" | "dark";
   onOpenMobile: () => void;
   onOpenQueue: () => void;
 }) {
   return (
-    <header className="h-14 border-b border-neutral-800 flex items-center px-4 gap-2">
+    <header className="h-24 border-b border-neutral-800 flex items-center px-4 gap-3 sticky top-0 bg-neutral-950/80 backdrop-blur supports-[backdrop-filter]:bg-neutral-950/60 z-50">
       <div className="md:hidden">
         <Button
           variant="outline"
@@ -146,50 +161,25 @@ function Navbar({
           <List className="size-4" />
         </Button>
       </div>
-      <div className="flex items-center gap-2 text-sm text-neutral-400">
-        <div className="md:hidden size-6 grid place-items-center rounded bg-gradient-to-br from-blue-500 to-purple-600 mr-2">
-          <span className="text-white font-bold text-xs">416</span>
+      <div className="flex items-center gap-3">
+        <div className="flex items-center justify-center shrink-0">
+          <img
+            src="/formatLogo.svg"
+            alt="Format416 Logo"
+            className="h-16 w-16"
+          />
         </div>
-        Format416 Catalog
+        <div className="min-w-0">
+          <h1 className="text-3xl font-thin truncate font-jetbrains tracking-tight">
+            <span className="hidden sm:inline">FORMAT416</span>
+            <span className="sm:hidden">F416</span>
+          </h1>
+          <p className="text-xs font-thin text-neutral-400 hidden sm:block truncate">
+            Recordings: Toronto
+          </p>
+        </div>
       </div>
       <div className="ml-auto flex items-center gap-2">
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={onToggleTheme}
-                aria-label="Toggle theme"
-                title="Toggle theme"
-              >
-                {theme === "dark" ? (
-                  <Sun className="size-4" />
-                ) : (
-                  <Moon className="size-4" />
-                )}
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>Toggle theme</TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="text-sm">
-              Languages
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem>English</DropdownMenuItem>
-            <DropdownMenuItem>हिंदी</DropdownMenuItem>
-            <DropdownMenuItem>தமிழ்</DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem>System default</DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-        <Button variant="default" className="text-sm">
-          Sign in
-        </Button>
         <Button
           variant="outline"
           size="icon"
@@ -229,7 +219,7 @@ function AlbumCard({
         <img
           src={release.cover}
           alt={`${release.title} cover`}
-          className="w-full h-44 object-cover rounded-xl"
+          className="w-full h-32 sm:h-36 md:h-44 object-cover rounded-xl"
         />
         <Button
           aria-label={`Play ${release.title}`}
@@ -239,21 +229,81 @@ function AlbumCard({
             onPlay();
           }}
           size="icon"
-          className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition"
+          className="absolute bottom-2 right-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition size-8 md:size-9"
         >
-          <Play className="size-4" />
+          <Play className="size-3 md:size-4" />
         </Button>
       </div>
-      <div className="p-3">
-        <div className="text-sm font-medium truncate">{release.title}</div>
+      <div className="p-2 md:p-3">
+        <div className="text-xs md:text-sm font-medium truncate">
+          {release.title}
+        </div>
         <div className="text-xs text-neutral-400 truncate">
           {release.artist}
         </div>
-        <div className="text-xs text-neutral-500 truncate">
+        <div className="text-xs text-neutral-500 truncate hidden sm:block">
           {release.type} • {release.duration}
         </div>
       </div>
     </Card>
+  );
+}
+
+function HeroSection({
+  currentRelease,
+  onPlay,
+  isPlaying,
+}: {
+  currentRelease: Release;
+  onPlay: () => void;
+  isPlaying: boolean;
+}) {
+  return (
+    <div className="relative h-80 bg-gradient-to-b from-neutral-800 to-neutral-900 overflow-hidden">
+      {/* Background Image */}
+      <div className="absolute inset-0 opacity-30">
+        <img
+          src={currentRelease.cover}
+          alt=""
+          className="w-full h-full object-cover"
+        />
+      </div>
+
+      {/* Content */}
+      <div className="relative h-full flex flex-col justify-end p-6 text-white">
+        <div className="mb-4">
+          <p className="text-sm opacity-80 mb-1">Now Playing</p>
+          <h1 className="text-2xl font-bold mb-1">{currentRelease.title}</h1>
+          <p className="text-lg opacity-90">{currentRelease.artist}</p>
+          <p className="text-sm opacity-70 mt-1">
+            {currentRelease.type} • {currentRelease.duration}
+          </p>
+        </div>
+
+        <div className="flex items-center gap-4">
+          <Button
+            onClick={onPlay}
+            size="icon"
+            className="size-12 rounded-full bg-white text-black hover:bg-gray-200"
+          >
+            {isPlaying ? (
+              <Pause className="size-6" />
+            ) : (
+              <Play className="size-6" />
+            )}
+          </Button>
+
+          <Button
+            variant="ghost"
+            size="icon"
+            className="size-10 text-white hover:bg-white/20"
+            onClick={() => window.open(currentRelease.url, "_blank")}
+          >
+            <Heart className="size-5" />
+          </Button>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -269,7 +319,7 @@ function AlbumGrid({
   return (
     <section className="p-4">
       <h2 className="text-lg font-semibold mb-3">{title}</h2>
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 md:gap-4">
         {releases.map((release, idx) => (
           <AlbumCard
             key={release.id}
@@ -306,22 +356,22 @@ function AudioPlayer({
   onVolume: (vol: number) => void;
 }) {
   return (
-    <footer className="h-20 border-t border-neutral-800 px-4 flex items-center gap-4 sticky bottom-0 bg-neutral-950/80 backdrop-blur supports-[backdrop-filter]:bg-neutral-950/60">
-      <div className="flex items-center gap-3 min-w-0">
+    <footer className="h-16 md:h-20 border-t border-neutral-800 px-3 md:px-4 flex items-center gap-2 md:gap-4 sticky bottom-0 bg-neutral-950/80 backdrop-blur supports-[backdrop-filter]:bg-neutral-950/60">
+      <div className="flex items-center gap-2 md:gap-3 min-w-0 flex-1 md:flex-initial">
         <img
           src={release.cover}
-          className="size-12 rounded object-cover"
+          className="size-10 md:size-12 rounded object-cover"
           alt="cover"
         />
-        <div className="min-w-0">
-          <div className="text-sm truncate">{release.title}</div>
+        <div className="min-w-0 flex-1">
+          <div className="text-xs md:text-sm truncate">{release.title}</div>
           <div className="text-xs text-neutral-400 truncate">
             {release.artist}
           </div>
         </div>
-        <Heart className="size-4 text-neutral-400" />
+        <Heart className="size-4 text-neutral-400 hidden md:block" />
       </div>
-      <div className="flex-1 flex flex-col items-center gap-1">
+      <div className="hidden md:flex flex-1 flex-col items-center gap-1">
         <div className="flex items-center gap-4">
           <Shuffle className="size-4 text-neutral-400" />
           <button aria-label="Previous" title="Previous" onClick={onPrev}>
@@ -358,6 +408,28 @@ function AudioPlayer({
           <span>{formatTime(duration)}</span>
         </div>
       </div>
+
+      {/* Mobile Controls */}
+      <div className="md:hidden flex items-center gap-3">
+        <button aria-label="Previous" title="Previous" onClick={onPrev}>
+          <SkipBack className="size-5" />
+        </button>
+        <button
+          aria-label={isPlaying ? "Pause" : "Play"}
+          title={isPlaying ? "Pause" : "Play"}
+          onClick={onPlayPause}
+          className="size-8 grid place-items-center rounded-full bg-white text-black"
+        >
+          {isPlaying ? (
+            <Pause className="size-4" />
+          ) : (
+            <Play className="size-4" />
+          )}
+        </button>
+        <button aria-label="Next" title="Next" onClick={onNext}>
+          <SkipForward className="size-5" />
+        </button>
+      </div>
       <div className="hidden md:flex items-center gap-3">
         <Volume2 className="size-4" />
         <input
@@ -383,7 +455,6 @@ function formatTime(seconds: number) {
 }
 
 export default function App() {
-  const { theme, toggle } = useThemeToggle();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
@@ -393,6 +464,8 @@ export default function App() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [queueOpen, setQueueOpen] = useState(false);
   const [queue, setQueue] = useState<number[]>([]);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [selectedFilter, setSelectedFilter] = useState<string>("all");
 
   // Lazily create audio element once
   if (audioRef.current === null) {
@@ -400,6 +473,21 @@ export default function App() {
   }
 
   const currentRelease = useMemo(() => RELEASES[currentIndex], [currentIndex]);
+
+  // Filter releases based on selected filter
+  const filteredReleases = useMemo(() => {
+    if (selectedFilter === "all") return RELEASES;
+    if (selectedFilter.startsWith("artist:")) {
+      const artist = selectedFilter.replace("artist:", "");
+      return RELEASES.filter((r) => r.artist === artist);
+    }
+    if (selectedFilter === "ep") {
+      return RELEASES.filter(
+        (r) => r.type === "ep" || r.type === "compilation"
+      );
+    }
+    return RELEASES.filter((r) => r.type === selectedFilter);
+  }, [selectedFilter]);
 
   useEffect(() => {
     const audio = audioRef.current!;
@@ -441,29 +529,45 @@ export default function App() {
   return (
     <div className="min-h-full grid grid-rows-[auto,1fr,auto]">
       <Navbar
-        onToggleTheme={toggle}
-        theme={theme}
         onOpenMobile={() => setMobileOpen(true)}
         onOpenQueue={() => setQueueOpen(true)}
       />
-      <div className="grid grid-cols-[0,1fr] md:grid-cols-[16rem,1fr]">
-        <Sidebar />
-        <main className="min-h-[calc(100vh-5rem)] overflow-y-auto">
+      <div
+        className={`grid grid-cols-1 ${
+          sidebarCollapsed
+            ? "md:grid-cols-[4rem,1fr]"
+            : "md:grid-cols-[16rem,1fr]"
+        }`}
+      >
+        <Sidebar
+          collapsed={sidebarCollapsed}
+          onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
+          selectedFilter={selectedFilter}
+          onFilterChange={setSelectedFilter}
+        />
+        <main className="min-h-[calc(100vh-12rem)] overflow-y-auto">
+          {/* Mobile Hero Section */}
+          <div className="md:hidden">
+            <HeroSection
+              currentRelease={currentRelease}
+              onPlay={() => handlePlayPause()}
+              isPlaying={isPlaying}
+            />
+          </div>
+
           <AlbumGrid
-            title="Latest Releases"
-            releases={RELEASES.slice(0, 6)}
-            onSelect={enqueueAndPlay}
-          />
-          <AlbumGrid
-            title="Full Albums"
-            releases={RELEASES.filter((r) => r.type === "album")}
-            onSelect={enqueueAndPlay}
-          />
-          <AlbumGrid
-            title="EPs & Singles"
-            releases={RELEASES.filter(
-              (r) => r.type === "ep" || r.type === "compilation"
-            )}
+            title={
+              selectedFilter === "all"
+                ? "All Releases"
+                : selectedFilter === "album"
+                ? "Albums"
+                : selectedFilter === "ep"
+                ? "EPs & Singles"
+                : selectedFilter.startsWith("artist:")
+                ? `${selectedFilter.replace("artist:", "")} - Releases`
+                : "Releases"
+            }
+            releases={filteredReleases}
             onSelect={enqueueAndPlay}
           />
         </main>
@@ -482,21 +586,94 @@ export default function App() {
       />
       {/* Mobile sidebar */}
       <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
-        <SheetContent side="left">
-          <div className="mb-4 flex items-center gap-2 text-lg font-semibold">
-            <div className="size-8 grid place-items-center rounded bg-gradient-to-br from-blue-500 to-purple-600">
-              <span className="text-white font-bold text-xs">416</span>
+        <SheetContent side="left" className="w-80">
+          <div className="flex flex-col h-full">
+            <div className="flex items-center gap-3 pb-4 border-b border-neutral-800">
+              <img
+                src="/formatLogo.svg"
+                alt="Format416 Logo"
+                className="h-12 w-12"
+              />
+              <div>
+                <h2 className="text-lg font-thin font-jetbrains tracking-wide">
+                  F416
+                </h2>
+                <p className="text-xs font-thin text-neutral-400">
+                  Recordings: Toronto
+                </p>
+              </div>
             </div>
-            Format416 Recordings
+
+            <div className="flex-1 overflow-y-auto py-4">
+              <nav className="flex flex-col gap-1">
+                {[
+                  { id: "all", label: "All Releases", icon: Library },
+                  { id: "album", label: "Albums", icon: Music },
+                  { id: "ep", label: "EPs & Singles", icon: List },
+                ].map((item) => (
+                  <button
+                    key={item.id}
+                    onClick={() => {
+                      setSelectedFilter(item.id);
+                      setMobileOpen(false);
+                    }}
+                    className={`flex items-center gap-3 px-2 py-2 rounded hover:bg-neutral-900 text-left transition-colors ${
+                      selectedFilter === item.id
+                        ? "bg-neutral-800 text-white"
+                        : "text-neutral-300"
+                    }`}
+                  >
+                    <item.icon className="size-4 shrink-0" />
+                    <span>{item.label}</span>
+                  </button>
+                ))}
+
+                <div className="mt-4 mb-2">
+                  <span className="text-sm font-medium text-neutral-400">
+                    Artists
+                  </span>
+                </div>
+
+                {Array.from(
+                  new Set(
+                    RELEASES.map((r) => r.artist).filter(
+                      (artist) =>
+                        !artist.includes("Format416") &&
+                        !artist.includes("Various")
+                    )
+                  )
+                ).map((artist) => (
+                  <button
+                    key={artist}
+                    onClick={() => {
+                      setSelectedFilter(`artist:${artist}`);
+                      setMobileOpen(false);
+                    }}
+                    className={`flex items-center gap-3 px-2 py-2 rounded hover:bg-neutral-900 text-left transition-colors ${
+                      selectedFilter === `artist:${artist}`
+                        ? "bg-neutral-800 text-white"
+                        : "text-neutral-300"
+                    }`}
+                  >
+                    <Search className="size-4 shrink-0" />
+                    <span className="truncate">{artist}</span>
+                  </button>
+                ))}
+
+                <div className="mt-4 pt-4 border-t border-neutral-800">
+                  <a
+                    className="flex items-center gap-3 px-2 py-2 rounded hover:bg-neutral-900 text-neutral-300 transition-colors"
+                    href="https://format416.bandcamp.com/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={() => setMobileOpen(false)}
+                  >
+                    <Heart className="size-4" /> Bandcamp Store
+                  </a>
+                </div>
+              </nav>
+            </div>
           </div>
-          <div className="h-[calc(100vh-6rem)] overflow-y-auto pr-2">
-            <Sidebar />
-          </div>
-          <SheetClose asChild>
-            <Button variant="outline" className="mt-4 w-full">
-              Close
-            </Button>
-          </SheetClose>
         </SheetContent>
       </Sheet>
 
