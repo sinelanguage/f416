@@ -64,7 +64,7 @@ function Sidebar({
     <aside
       className={`hidden md:flex ${
         collapsed ? "w-16" : "w-64"
-      } shrink-0 flex-col gap-4 p-4 border-r border-neutral-800 transition-all duration-300`}
+      } shrink-0 flex-col gap-4 p-4 transition-all duration-300`}
     >
       <div className="flex items-center justify-between">
         {!collapsed && (
@@ -124,7 +124,7 @@ function Sidebar({
               </button>
             ))}
 
-            <div className="mt-4 pt-4 border-t border-neutral-800">
+            <div className="mt-4 pt-4">
               <a
                 className="flex items-center gap-3 px-2 py-2 rounded hover:bg-neutral-900 text-neutral-300 transition-colors"
                 href="https://format416.bandcamp.com/"
@@ -149,7 +149,7 @@ function Navbar({
   onOpenQueue: () => void;
 }) {
   return (
-    <header className="h-24 border-b border-neutral-800 flex items-center px-4 gap-3 sticky top-0 bg-neutral-950/80 backdrop-blur supports-[backdrop-filter]:bg-neutral-950/60 z-50">
+    <header className="h-24 flex items-center px-4 gap-3 sticky top-0 bg-neutral-950/80 backdrop-blur supports-[backdrop-filter]:bg-neutral-950/60 z-50">
       <div className="md:hidden">
         <Button
           variant="outline"
@@ -212,7 +212,7 @@ function AlbumCard({
 
   return (
     <Card
-      className="group bg-neutral-900/60 cursor-pointer hover:bg-neutral-900/80 transition-colors"
+      className="group bg-neutral-900/80 cursor-pointer hover:bg-neutral-900/90 transition-colors"
       onClick={handleCardClick}
     >
       <div className="relative">
@@ -356,7 +356,7 @@ function AudioPlayer({
   onVolume: (vol: number) => void;
 }) {
   return (
-    <footer className="h-16 md:h-20 border-t border-neutral-800 px-3 md:px-4 flex items-center gap-2 md:gap-4 sticky bottom-0 bg-neutral-950/80 backdrop-blur supports-[backdrop-filter]:bg-neutral-950/60">
+    <footer className="h-16 md:h-20 px-3 md:px-4 flex items-center gap-2 md:gap-4 sticky bottom-0 bg-neutral-950/80 backdrop-blur supports-[backdrop-filter]:bg-neutral-950/60">
       <div className="flex items-center gap-2 md:gap-3 min-w-0 flex-1 md:flex-initial">
         <img
           src={release.cover}
@@ -588,7 +588,7 @@ export default function App() {
       <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
         <SheetContent side="left" className="w-80">
           <div className="flex flex-col h-full">
-            <div className="flex items-center gap-3 pb-4 border-b border-neutral-800">
+            <div className="flex items-center gap-3 pb-4">
               <img
                 src="/formatLogo.svg"
                 alt="Format416 Logo"
@@ -660,7 +660,7 @@ export default function App() {
                   </button>
                 ))}
 
-                <div className="mt-4 pt-4 border-t border-neutral-800">
+                <div className="mt-4 pt-4">
                   <a
                     className="flex items-center gap-3 px-2 py-2 rounded hover:bg-neutral-900 text-neutral-300 transition-colors"
                     href="https://format416.bandcamp.com/"
