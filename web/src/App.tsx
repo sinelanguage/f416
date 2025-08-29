@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
-  Music,
-  Search,
-  Library,
   Heart,
+  Music,
+  Library,
+  Search,
   SkipBack,
   Play,
   Pause,
@@ -97,8 +97,11 @@ function Sidebar({
                 : "text-neutral-300"
             }`}
           >
-            <item.icon className="size-4 shrink-0" />
-            {!collapsed && <span>{item.label}</span>}
+            {collapsed ? (
+              <item.icon className="size-4 shrink-0" />
+            ) : (
+              <span className="truncate">{item.label}</span>
+            )}
           </button>
         ))}
 
@@ -119,8 +122,11 @@ function Sidebar({
                     : "text-neutral-300"
                 }`}
               >
-                <Search className="size-4 shrink-0" />
-                <span className="truncate">{artist}</span>
+                {collapsed ? (
+                  <Search className="size-4 shrink-0" />
+                ) : (
+                  <span className="truncate">{artist}</span>
+                )}
               </button>
             ))}
 
@@ -131,7 +137,11 @@ function Sidebar({
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                <Heart className="size-4" /> Bandcamp Store
+                {collapsed ? (
+                  <Heart className="size-4" />
+                ) : (
+                  <span>Bandcamp Store</span>
+                )}
               </a>
             </div>
           </>
@@ -212,10 +222,10 @@ function AlbumCard({
 
   return (
     <Card
-      className="group bg-neutral-900/80 cursor-pointer hover:bg-neutral-900/90 transition-colors"
+      className="group cursor-pointer transition-colors"
       onClick={handleCardClick}
     >
-      <div className="relative">
+      <div className="relative rounded-xl overflow-hidden bg-neutral-900/80 group-hover:bg-neutral-900/90 transition-colors">
         <img
           src={release.cover}
           alt={`${release.title} cover`}
@@ -234,7 +244,7 @@ function AlbumCard({
           <Play className="size-3 md:size-4" />
         </Button>
       </div>
-      <div className="p-2 md:p-3">
+      <div className="p-2 md:p-3 bg-transparent">
         <div className="text-xs md:text-sm font-medium truncate">
           {release.title}
         </div>
@@ -623,7 +633,6 @@ export default function App() {
                         : "text-neutral-300"
                     }`}
                   >
-                    <item.icon className="size-4 shrink-0" />
                     <span>{item.label}</span>
                   </button>
                 ))}
@@ -655,7 +664,6 @@ export default function App() {
                         : "text-neutral-300"
                     }`}
                   >
-                    <Search className="size-4 shrink-0" />
                     <span className="truncate">{artist}</span>
                   </button>
                 ))}
@@ -668,7 +676,7 @@ export default function App() {
                     rel="noopener noreferrer"
                     onClick={() => setMobileOpen(false)}
                   >
-                    <Heart className="size-4" /> Bandcamp Store
+                    <span>Bandcamp Store</span>
                   </a>
                 </div>
               </nav>
