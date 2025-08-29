@@ -259,60 +259,159 @@ function AlbumCard({
   );
 }
 
-function HeroSection({
-  currentRelease,
+function TopBannerPlayer({
+  release,
+  isActive,
+  currentTime,
+  duration,
   onPlay,
-  isPlaying,
+  onSeek,
 }: {
-  currentRelease: Release;
+  release: Release;
+  isActive: boolean;
+  currentTime: number;
+  duration: number;
   onPlay: () => void;
-  isPlaying: boolean;
+  onSeek: (time: number) => void;
 }) {
-  return (
-    <div className="relative h-80 bg-gradient-to-b from-neutral-800 to-neutral-900 overflow-hidden">
-      {/* Background Image */}
-      <div className="absolute inset-0 opacity-30">
-        <img
-          src={currentRelease.cover}
-          alt=""
-          className="w-full h-full object-cover"
-        />
-      </div>
+  const waveformRef = useRef<HTMLDivElement | null>(null);
+  const [barCount, setBarCount] = useState<number>(200);
+  // Deterministic pseudo-random for consistent waveform per release
+  const peaks = useMemo(() => {
+    const seedString = `${release.id}-${release.title}-${release.artist}`;
+    let seed = 0;
+    for (let i = 0; i < seedString.length; i++) {
+      seed = (seed * 31 + seedString.charCodeAt(i)) >>> 0;
+    }
+    const random = () => {
+      seed ^= seed << 13;
+      seed ^= seed >>> 17;
+      seed ^= seed << 5;
+      return ((seed >>> 0) % 1000) / 1000;
+    };
+    const values: number[] = [];
+    for (let i = 0; i < barCount; i++) {
+      // Bias to create a build-up and fade-out shape
+      const envelope = Math.sin((Math.PI * i) / barCount);
+      const jitter = 0.6 + random() * 0.4;
+      values.push(Math.max(0.1, envelope * jitter));
+    }
+    return values;
+  }, [release.id, release.title, release.artist, barCount]);
 
-      {/* Content */}
-      <div className="relative h-full flex flex-col justify-end p-6 text-white">
-        <div className="mb-4">
-          <p className="text-sm opacity-80 mb-1">Now Playing</p>
-          <h1 className="text-2xl font-bold mb-1">{currentRelease.title}</h1>
-          <p className="text-lg opacity-90">{currentRelease.artist}</p>
-          <p className="text-sm opacity-70 mt-1">
-            {currentRelease.type} • {currentRelease.duration}
-          </p>
+  // Resize-aware bar count to render on tablet/mobile
+  useEffect(() => {
+    const el = waveformRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver((entries) => {
+      const width = entries[0]?.contentRect.width || el.clientWidth || 0;
+      const step = window.innerWidth >= 768 ? 7 : 5.5; // px per bar incl. gap
+      const count = Math.max(80, Math.floor(width / step));
+      setBarCount(count);
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
+  const playedRatio = duration > 0 ? Math.min(1, currentTime / duration) : 0;
+
+  const handleSeekClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!duration) return;
+    const rect = (e.currentTarget as HTMLDivElement).getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const ratio = Math.max(0, Math.min(1, x / rect.width));
+    onSeek(ratio * duration);
+  };
+
+  return (
+    <div className="px-4">
+      <Card className="relative w-full overflow-hidden bg-neutral-900/50">
+        {/* Background gradient and blurred art on the right */}
+        <div className="absolute inset-0 z-0">
+          <div className="absolute inset-0 bg-gradient-to-b from-neutral-800 to-neutral-900" />
+          <div
+            className="absolute right-0 top-0 h-full w-1/2 md:w-2/5"
+            style={{
+              backgroundImage: `url(${release.cover})`,
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+              filter: "blur(12px) saturate(120%)",
+              maskImage: "linear-gradient(to left, black, transparent)",
+              WebkitMaskImage: "linear-gradient(to left, black, transparent)",
+            }}
+          />
         </div>
 
-        <div className="flex items-center gap-4">
+        {/* Content */}
+        <div className="relative z-20 px-4 pt-4 md:px-4 md:pt-6 pb-0 flex items-start gap-3 md:gap-6">
           <Button
             onClick={onPlay}
             size="icon"
-            className="size-12 rounded-full bg-white text-black hover:bg-gray-200"
+            className="size-12 sm:size-14 md:size-16 rounded-full bg-white text-black hover:bg-gray-200 shrink-0"
+            aria-label={isActive ? "Pause" : "Play"}
+            title={isActive ? "Pause" : "Play"}
           >
-            {isPlaying ? (
-              <Pause className="size-6" />
+            {isActive ? (
+              <Pause className="size-6 sm:size-7 md:size-8" />
             ) : (
-              <Play className="size-6" />
+              <Play className="size-6 sm:size-7 md:size-8" />
             )}
           </Button>
 
-          <Button
-            variant="ghost"
-            size="icon"
-            className="size-10 text-white hover:bg-white/20"
-            onClick={() => window.open(currentRelease.url, "_blank")}
-          >
-            <Heart className="size-5" />
-          </Button>
+          <div className="min-w-0 flex-1">
+            <div className="mb-2 md:mb-3">
+              <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-white truncate">
+                {release.title}
+              </h2>
+              <div className="text-xs sm:text-sm text-neutral-300 truncate">
+                {release.artist}
+              </div>
+            </div>
+
+            {/* Waveform overlay handled at Card level */}
+            <div className="sr-only">waveform overlay</div>
+          </div>
+
+          {/* Artwork card on the right */}
+          <div className="hidden sm:block ml-auto">
+            <img
+              src={release.cover}
+              alt={`${release.title} cover`}
+              className="h-40 w-40 md:h-56 md:w-56 object-cover rounded-xl shadow-md"
+            />
+          </div>
         </div>
-      </div>
+        {/* Full-width waveform overlay above background, below content */}
+        <div
+          className="absolute inset-x-0 bottom-0 z-10 select-none"
+          onClick={handleSeekClick}
+        >
+          <div
+            ref={waveformRef}
+            className="h-24 sm:h-28 md:h-36 flex items-end gap-px md:gap-[3px]"
+          >
+            {peaks.map((v, i) => {
+              const barRatio = i / peaks.length;
+              const played = barRatio <= playedRatio;
+              return (
+                <div
+                  key={i}
+                  className={`w-px sm:w-[2px] md:w-[3px] ${
+                    played ? "bg-white" : "bg-neutral-400/40"
+                  }`}
+                  style={{ height: `${Math.max(16, v * 140)}px` }}
+                />
+              );
+            })}
+          </div>
+          <div
+            className="absolute bottom-0 translate-x-[-50%]"
+            style={{ left: `${playedRatio * 100}%` }}
+          >
+            <div className="size-4 sm:size-5 md:size-6 rounded-full bg-white ring-2 ring-black/30" />
+          </div>
+        </div>
+      </Card>
     </div>
   );
 }
@@ -476,6 +575,7 @@ export default function App() {
   const [queue, setQueue] = useState<number[]>([]);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [selectedFilter, setSelectedFilter] = useState<string>("all");
+  const [bannerIndex, setBannerIndex] = useState<number>(0);
 
   // Lazily create audio element once
   if (audioRef.current === null) {
@@ -483,6 +583,7 @@ export default function App() {
   }
 
   const currentRelease = useMemo(() => RELEASES[currentIndex], [currentIndex]);
+  const bannerRelease = useMemo(() => RELEASES[bannerIndex], [bannerIndex]);
 
   // Filter releases based on selected filter
   const filteredReleases = useMemo(() => {
@@ -498,6 +599,20 @@ export default function App() {
     }
     return RELEASES.filter((r) => r.type === selectedFilter);
   }, [selectedFilter]);
+
+  // Pick a contextual random banner track whenever the filter changes
+  useEffect(() => {
+    const setRandomBanner = () => {
+      const candidates = filteredReleases;
+      if (!candidates.length) return;
+      const idxInFiltered = Math.floor(Math.random() * candidates.length);
+      const id = candidates[idxInFiltered].id;
+      const idxInAll = RELEASES.findIndex((r) => r.id === id);
+      if (idxInAll !== -1) setBannerIndex(idxInAll);
+    };
+    setRandomBanner();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedFilter, filteredReleases]);
 
   useEffect(() => {
     const audio = audioRef.current!;
@@ -521,6 +636,23 @@ export default function App() {
     setCurrentIndex((i) => (i - 1 + RELEASES.length) % RELEASES.length);
   const handleNext = () => setCurrentIndex((i) => (i + 1) % RELEASES.length);
   const handleSeek = (time: number) => {
+    const audio = audioRef.current!;
+    audio.currentTime = time;
+    setCurrentTime(time);
+  };
+  const handleBannerPlay = () => {
+    if (currentIndex === bannerIndex) {
+      setIsPlaying((p) => !p);
+    } else {
+      setCurrentIndex(bannerIndex);
+      setIsPlaying(true);
+    }
+  };
+  const handleBannerSeek = (time: number) => {
+    if (currentIndex !== bannerIndex) {
+      setCurrentIndex(bannerIndex);
+      setIsPlaying(true);
+    }
     const audio = audioRef.current!;
     audio.currentTime = time;
     setCurrentTime(time);
@@ -556,14 +688,14 @@ export default function App() {
           onFilterChange={setSelectedFilter}
         />
         <main className="min-h-[calc(100vh-12rem)] overflow-y-auto">
-          {/* Mobile Hero Section */}
-          <div className="md:hidden">
-            <HeroSection
-              currentRelease={currentRelease}
-              onPlay={() => handlePlayPause()}
-              isPlaying={isPlaying}
-            />
-          </div>
+          <TopBannerPlayer
+            release={bannerRelease}
+            isActive={isPlaying && currentIndex === bannerIndex}
+            currentTime={currentIndex === bannerIndex ? currentTime : 0}
+            duration={currentIndex === bannerIndex ? duration : duration}
+            onPlay={handleBannerPlay}
+            onSeek={handleBannerSeek}
+          />
 
           <AlbumGrid
             title={
