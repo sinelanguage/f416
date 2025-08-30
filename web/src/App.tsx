@@ -64,7 +64,7 @@ function Sidebar({
     <aside
       className={`hidden md:flex ${
         collapsed ? "w-16" : "w-64"
-      } shrink-0 flex-col gap-4 p-4 transition-all duration-300`}
+      } shrink-0 flex-col gap-4 p-4 transition-all duration-300 min-h-[calc(100vh-12rem)]`}
     >
       <div className="flex items-center justify-between">
         {!collapsed && (
@@ -764,7 +764,10 @@ export default function App() {
       />
       {/* Mobile sidebar */}
       <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
-        <SheetContent side="left" className="w-80">
+        <SheetContent
+          side="left"
+          className="w-80 p-4 bg-neutral-900/40 backdrop-blur supports-[backdrop-filter]:bg-neutral-900/30"
+        >
           <div className="flex flex-col h-full">
             <div className="flex items-center gap-3 pb-4">
               <img
@@ -855,7 +858,10 @@ export default function App() {
 
       {/* Queue sheet */}
       <Sheet open={queueOpen} onOpenChange={setQueueOpen}>
-        <SheetContent side="right">
+        <SheetContent
+          side="right"
+          className="w-96 p-4 bg-neutral-900/40 backdrop-blur supports-[backdrop-filter]:bg-neutral-900/30"
+        >
           <div className="text-lg font-semibold mb-4">Queue</div>
           <div className="space-y-2">
             {(queue.length
@@ -865,12 +871,12 @@ export default function App() {
               <button
                 key={`q-${idx}`}
                 onClick={() => enqueueAndPlay(idx)}
-                className="w-full flex items-center gap-3 text-left p-2 rounded hover:bg-neutral-900"
+                className="w-full flex items-center gap-3 text-left p-2 hover:bg-neutral-900/50"
               >
                 <img
                   src={RELEASES[idx].cover}
                   alt={RELEASES[idx].title}
-                  className="size-10 rounded object-cover"
+                  className="size-10 object-cover"
                 />
                 <div className="min-w-0">
                   <div className="text-sm truncate">{RELEASES[idx].title}</div>
