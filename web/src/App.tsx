@@ -159,7 +159,7 @@ function Navbar({
   onOpenQueue: () => void;
 }) {
   return (
-    <header className="h-24 flex items-center px-4 gap-3 sticky top-0 bg-neutral-950/80 backdrop-blur supports-[backdrop-filter]:bg-neutral-950/60 z-50">
+    <header className="h-24 flex items-center px-4 gap-3 sticky top-0 backdrop-blur z-50">
       <div className="md:hidden">
         <Button
           variant="outline"
@@ -305,7 +305,7 @@ function TopBannerPlayer({
     if (!el) return;
     const ro = new ResizeObserver((entries) => {
       const width = entries[0]?.contentRect.width || el.clientWidth || 0;
-      const step = window.innerWidth >= 768 ? 7 : 5.5; // px per bar incl. gap
+      const step = window.innerWidth >= 768 ? 7 : 3; // px per bar incl. gap (mobile denser)
       const count = Math.max(80, Math.floor(width / step));
       setBarCount(count);
     });
@@ -324,7 +324,7 @@ function TopBannerPlayer({
   };
 
   return (
-    <div className="px-4">
+    <div className="px-4 mt-4">
       <Card className="relative w-full overflow-hidden bg-neutral-900/50">
         {/* Background gradient and blurred art on the right */}
         <div className="absolute inset-0 z-0">
@@ -373,7 +373,7 @@ function TopBannerPlayer({
           </div>
 
           {/* Artwork card on the right */}
-          <div className="hidden sm:block ml-auto">
+          <div className="hidden sm:block ml-auto mb-4">
             <img
               src={release.cover}
               alt={`${release.title} cover`}
@@ -383,12 +383,12 @@ function TopBannerPlayer({
         </div>
         {/* Full-width waveform overlay above background, below content */}
         <div
-          className="absolute inset-x-0 bottom-0 z-10 select-none"
+          className="absolute left-0 right-0 bottom-0 z-10 select-none"
           onClick={handleSeekClick}
         >
           <div
             ref={waveformRef}
-            className="h-24 sm:h-28 md:h-36 flex items-end gap-px md:gap-[3px]"
+            className="w-full h-24 sm:h-28 md:h-36 flex items-end gap-0 sm:gap-px md:gap-[2px] px-4"
           >
             {peaks.map((v, i) => {
               const barRatio = i / peaks.length;
@@ -465,7 +465,7 @@ function AudioPlayer({
   onVolume: (vol: number) => void;
 }) {
   return (
-    <footer className="h-16 md:h-20 px-3 md:px-4 flex items-center gap-2 md:gap-4 sticky bottom-0 bg-neutral-950/80 backdrop-blur supports-[backdrop-filter]:bg-neutral-950/60">
+    <footer className="h-16 md:h-20 px-3 md:px-4 flex items-center gap-2 md:gap-4 sticky bottom-0 backdrop-blur">
       <div className="flex items-center gap-2 md:gap-3 min-w-0 flex-1 md:flex-initial">
         <img
           src={release.cover}
@@ -576,6 +576,7 @@ export default function App() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [selectedFilter, setSelectedFilter] = useState<string>("all");
   const [bannerIndex, setBannerIndex] = useState<number>(0);
+  const [backgroundIndex, setBackgroundIndex] = useState<number>(0);
 
   // Lazily create audio element once
   if (audioRef.current === null) {
@@ -613,6 +614,24 @@ export default function App() {
     setRandomBanner();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedFilter, filteredReleases]);
+
+  // Pick a separate contextual random background cover (distinct from banner when possible)
+  useEffect(() => {
+    const candidates = filteredReleases.length ? filteredReleases : RELEASES;
+    if (!candidates.length) return;
+    let idxInAll = -1;
+    for (let attempt = 0; attempt < 5; attempt++) {
+      const idx = Math.floor(Math.random() * candidates.length);
+      const id = candidates[idx].id;
+      const found = RELEASES.findIndex((r) => r.id === id);
+      if (found !== -1 && found !== bannerIndex) {
+        idxInAll = found;
+        break;
+      }
+      if (found !== -1) idxInAll = found; // fallback if all equal
+    }
+    if (idxInAll !== -1) setBackgroundIndex(idxInAll);
+  }, [selectedFilter, filteredReleases, bannerIndex]);
 
   useEffect(() => {
     const audio = audioRef.current!;
@@ -670,6 +689,23 @@ export default function App() {
 
   return (
     <div className="min-h-full grid grid-rows-[auto,1fr,auto]">
+      {/* Global blurred background from random cover */}
+      <div
+        className="fixed inset-0 -z-10 pointer-events-none"
+        aria-hidden="true"
+      >
+        <div className="absolute inset-0 bg-neutral-950" />
+        <div
+          className="absolute inset-0 opacity-60"
+          style={{
+            backgroundImage: `url(${RELEASES[backgroundIndex]?.cover})`,
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            filter: "blur(28px) saturate(115%) brightness(0.6)",
+          }}
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-neutral-950/70 via-neutral-950/40 to-neutral-950/80" />
+      </div>
       <Navbar
         onOpenMobile={() => setMobileOpen(true)}
         onOpenQueue={() => setQueueOpen(true)}
