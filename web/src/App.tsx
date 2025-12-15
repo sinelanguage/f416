@@ -303,7 +303,7 @@ function TopBannerPlayer({
       progressColor: "rgba(255, 255, 255, 0.9)",
       cursorColor: "transparent",
       cursorWidth: 0,
-      barWidth: 2,
+      barWidth: 3,
       barGap: 1,
       barRadius: 2,
       minPxPerSec: 1,
@@ -313,26 +313,41 @@ function TopBannerPlayer({
       interact: false,
       backend: "WebAudio",
       pixelRatio: window.devicePixelRatio || 2,
-      // Custom render function for mirrored/reflected waveform
+      // Custom render function for mirrored/reflected waveform like SoundCloud
       renderFunction: (channels, ctx) => {
         const { width, height } = ctx.canvas;
         const channel = channels[0];
-        const step = width / channel.length;
         const halfHeight = height / 2;
+        const barWidth = 4;
+        const barGap = 3;
+        const barStep = barWidth + barGap;
+        const barCount = Math.floor(width / barStep);
 
         ctx.clearRect(0, 0, width, height);
 
-        // Draw bars mirrored from center
-        for (let i = 0; i < channel.length; i++) {
-          const x = i * step;
-          const barHeight = channel[i] * halfHeight;
+        // Get current progress from WaveSurfer
+        const progress = wavesurferRef.current?.getCurrentTime() || 0;
+        const totalDuration = wavesurferRef.current?.getDuration() || 1;
+        const progressRatio = progress / totalDuration;
 
-          // Top half (mirrored)
-          ctx.fillStyle = "rgba(255, 255, 255, 0.3)";
-          ctx.fillRect(x, halfHeight - barHeight, 2, barHeight);
+        for (let i = 0; i < barCount; i++) {
+          const x = i * barStep;
+          const barProgress = i / barCount;
+          const channelIndex = Math.floor((i / barCount) * channel.length);
+          const amplitude = Math.abs(channel[channelIndex] || 0);
+          const barHeight = amplitude * halfHeight * 0.9; // 0.9 to leave some space at edges
 
-          // Bottom half (reflection)
-          ctx.fillRect(x, halfHeight, 2, barHeight);
+          // Choose color based on progress
+          const isPlayed = barProgress <= progressRatio;
+          ctx.fillStyle = isPlayed
+            ? "rgba(255, 255, 255, 0.95)"
+            : "rgba(255, 255, 255, 0.25)";
+
+          // Top half (mirrored up from center)
+          ctx.fillRect(x, halfHeight - barHeight, barWidth, barHeight);
+
+          // Bottom half (mirrored down from center - reflection)
+          ctx.fillRect(x, halfHeight, barWidth, barHeight);
         }
       },
     });
