@@ -21,6 +21,7 @@ import { Card } from "./components/ui/card";
 import { Sheet, SheetContent } from "./components/ui/sheet";
 import bandcampData from "./data/bandcamp.json";
 import { getAssetUrl } from "./config";
+import WaveSurfer from "wavesurfer.js";
 
 type Track = {
   id: number;
@@ -287,45 +288,85 @@ function TopBannerPlayer({
   onSeek: (time: number) => void;
 }) {
   const waveformRef = useRef<HTMLDivElement | null>(null);
-  const [barCount, setBarCount] = useState<number>(200);
-  // Deterministic pseudo-random for consistent waveform per release
-  const peaks = useMemo(() => {
-    const seedString = `${release.id}-${release.title}-${release.artist}`;
-    let seed = 0;
-    for (let i = 0; i < seedString.length; i++) {
-      seed = (seed * 31 + seedString.charCodeAt(i)) >>> 0;
-    }
-    const random = () => {
-      seed ^= seed << 13;
-      seed ^= seed >>> 17;
-      seed ^= seed << 5;
-      return ((seed >>> 0) % 1000) / 1000;
-    };
-    const values: number[] = [];
-    for (let i = 0; i < barCount; i++) {
-      // Bias to create a build-up and fade-out shape
-      const envelope = Math.sin((Math.PI * i) / barCount);
-      const jitter = 0.6 + random() * 0.4;
-      values.push(Math.max(0.1, envelope * jitter));
-    }
-    return values;
-  }, [release.id, release.title, release.artist, barCount]);
+  const wavesurferRef = useRef<WaveSurfer | null>(null);
+  const [isWaveformReady, setIsWaveformReady] = useState(false);
 
-  // Resize-aware bar count to render on tablet/mobile
+  // Initialize WaveSurfer
   useEffect(() => {
-    const el = waveformRef.current;
-    if (!el) return;
-    const ro = new ResizeObserver((entries) => {
-      const width = entries[0]?.contentRect.width || el.clientWidth || 0;
-      const step = window.innerWidth >= 768 ? 7 : 3; // px per bar incl. gap (mobile denser)
-      const count = Math.max(80, Math.floor(width / step));
-      setBarCount(count);
+    if (!waveformRef.current) return;
+
+    const wavesurfer = WaveSurfer.create({
+      container: waveformRef.current,
+      height:
+        window.innerWidth >= 768 ? 72 : window.innerWidth >= 640 ? 56 : 48,
+      // Gradient colors for unplayed portion
+      waveColor: ["rgba(255, 255, 255, 0.4)", "rgba(255, 255, 255, 0.15)"],
+      // Gradient colors for played portion
+      progressColor: ["rgba(255, 255, 255, 1)", "rgba(255, 255, 255, 0.5)"],
+      cursorColor: "transparent",
+      cursorWidth: 0,
+      barWidth: 2,
+      barGap: 1,
+      barRadius: 2,
+      barAlign: "bottom",
+      minPxPerSec: 1,
+      fillParent: true,
+      autoCenter: false,
+      normalize: false, // Don't normalize - shows true dynamic range
+      hideScrollbar: true,
+      interact: false,
+      // WebAudio backend for better quality
+      backend: "WebAudio",
+      // Higher resolution
+      pixelRatio: window.devicePixelRatio || 2,
     });
-    ro.observe(el);
-    return () => ro.disconnect();
+
+    wavesurferRef.current = wavesurfer;
+
+    // Handle ready event
+    wavesurfer.on("ready", () => {
+      setIsWaveformReady(true);
+    });
+
+    return () => {
+      wavesurfer.destroy();
+      wavesurferRef.current = null;
+      setIsWaveformReady(false);
+    };
   }, []);
 
-  const playedRatio = duration > 0 ? Math.min(1, currentTime / duration) : 0;
+  // Load audio when track changes
+  useEffect(() => {
+    if (!wavesurferRef.current || !track?.path) return;
+
+    setIsWaveformReady(false);
+    const audioUrl = getAssetUrl(track.path);
+
+    // Load the audio file
+    wavesurferRef.current.load(audioUrl);
+  }, [track?.path]);
+
+  // Sync WaveSurfer progress with external audio playback
+  useEffect(() => {
+    if (!wavesurferRef.current || !isWaveformReady || !duration) return;
+
+    const progress = currentTime / duration;
+    wavesurferRef.current.seekTo(progress);
+  }, [currentTime, duration, isWaveformReady]);
+
+  // Handle responsive height
+  useEffect(() => {
+    if (!wavesurferRef.current) return;
+
+    const handleResize = () => {
+      const height =
+        window.innerWidth >= 768 ? 72 : window.innerWidth >= 640 ? 56 : 48;
+      wavesurferRef.current?.setOptions({ height });
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   const handleSeekClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!duration) return;
@@ -338,23 +379,20 @@ function TopBannerPlayer({
   return (
     <div className="px-4 mt-4">
       <Card className="relative w-full overflow-hidden bg-neutral-900/50">
-        {/* Background gradient and blurred art on the right */}
+        {/* Background gradient */}
         <div className="absolute inset-0 z-0">
           <div className="absolute inset-0 bg-gradient-to-b from-neutral-800 to-neutral-900" />
-          <div
-            className="absolute right-0 top-0 h-full w-1/2 md:w-2/5"
-            style={{
-              backgroundImage: `url(${getAssetUrl(release.cover)})`,
-              backgroundSize: "cover",
-              backgroundPosition: "center",
-              filter: "blur(12px) saturate(120%)",
-              maskImage: "linear-gradient(to left, black, transparent)",
-              WebkitMaskImage: "linear-gradient(to left, black, transparent)",
-            }}
-          />
         </div>
 
-        {/* Content */}
+        {/* Waveform layer - behind content but not artwork */}
+        <div
+          className="absolute left-0 right-0 sm:right-44 md:right-60 top-1/2 -translate-y-1/2 z-[5] select-none cursor-pointer px-4"
+          onClick={handleSeekClick}
+        >
+          <div ref={waveformRef} className="w-full h-12 sm:h-14 md:h-18" />
+        </div>
+
+        {/* Content - above waveform */}
         <div className="relative z-20 px-4 pt-4 md:px-4 md:pt-6 pb-0 flex items-start gap-3 md:gap-6">
           <Button
             onClick={onPlay}
@@ -379,48 +417,15 @@ function TopBannerPlayer({
                 {release.artist} {track && `• ${release.title}`}
               </div>
             </div>
-
-            {/* Waveform overlay handled at Card level */}
-            <div className="sr-only">waveform overlay</div>
           </div>
 
-          {/* Artwork card on the right */}
+          {/* Artwork card on the right - above waveform */}
           <div className="hidden sm:block ml-auto mb-4">
             <img
               src={getAssetUrl(release.cover)}
               alt={`${release.title} cover`}
               className="h-40 w-40 md:h-56 md:w-56 object-cover rounded-xl shadow-md"
             />
-          </div>
-        </div>
-        {/* Full-width waveform overlay above background, below content */}
-        <div
-          className="absolute left-0 right-0 bottom-0 z-10 select-none"
-          onClick={handleSeekClick}
-        >
-          <div
-            ref={waveformRef}
-            className="w-full h-24 sm:h-28 md:h-36 flex items-end gap-0 sm:gap-px md:gap-[2px] px-4"
-          >
-            {peaks.map((v, i) => {
-              const barRatio = i / peaks.length;
-              const played = barRatio <= playedRatio;
-              return (
-                <div
-                  key={i}
-                  className={`w-px sm:w-[2px] md:w-[3px] ${
-                    played ? "bg-white" : "bg-neutral-400/40"
-                  }`}
-                  style={{ height: `${Math.max(16, v * 140)}px` }}
-                />
-              );
-            })}
-          </div>
-          <div
-            className="absolute bottom-0 translate-x-[-50%]"
-            style={{ left: `${playedRatio * 100}%` }}
-          >
-            <div className="size-4 sm:size-5 md:size-6 rounded-full bg-white ring-2 ring-black/30" />
           </div>
         </div>
       </Card>
