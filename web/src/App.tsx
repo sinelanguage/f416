@@ -21,6 +21,14 @@ import { Card } from "./components/ui/card";
 import { Sheet, SheetContent } from "./components/ui/sheet";
 import bandcampData from "./data/bandcamp.json";
 
+type Track = {
+  id: number;
+  title: string;
+  duration: number;
+  path: string;
+  trackNumber: number;
+};
+
 type Release = {
   id: string;
   title: string;
@@ -30,6 +38,7 @@ type Release = {
   url: string;
   duration: string;
   type: "album" | "ep" | "compilation";
+  tracks?: Track[];
 };
 
 const RELEASES: Release[] = bandcampData as Release[];
@@ -261,6 +270,7 @@ function AlbumCard({
 
 function TopBannerPlayer({
   release,
+  track,
   isActive,
   currentTime,
   duration,
@@ -268,6 +278,7 @@ function TopBannerPlayer({
   onSeek,
 }: {
   release: Release;
+  track: Track | null;
   isActive: boolean;
   currentTime: number;
   duration: number;
@@ -361,10 +372,10 @@ function TopBannerPlayer({
           <div className="min-w-0 flex-1">
             <div className="mb-2 md:mb-3">
               <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-white truncate">
-                {release.title}
+                {track ? track.title : release.title}
               </h2>
               <div className="text-xs sm:text-sm text-neutral-300 truncate">
-                {release.artist}
+                {release.artist} {track && `• ${release.title}`}
               </div>
             </div>
 
@@ -443,6 +454,7 @@ function AlbumGrid({
 
 function AudioPlayer({
   release,
+  track,
   isPlaying,
   currentTime,
   duration,
@@ -454,6 +466,7 @@ function AudioPlayer({
   onVolume,
 }: {
   release: Release;
+  track: Track | null;
   isPlaying: boolean;
   currentTime: number;
   duration: number;
@@ -473,9 +486,11 @@ function AudioPlayer({
           alt="cover"
         />
         <div className="min-w-0 flex-1">
-          <div className="text-xs md:text-sm truncate">{release.title}</div>
+          <div className="text-xs md:text-sm truncate">
+            {track ? track.title : release.title}
+          </div>
           <div className="text-xs text-neutral-400 truncate">
-            {release.artist}
+            {release.artist} {track && `• ${release.title}`}
           </div>
         </div>
         <Heart className="size-4 text-neutral-400 hidden md:block" />
@@ -565,6 +580,7 @@ function formatTime(seconds: number) {
 
 export default function App() {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [currentTrackIndex, setCurrentTrackIndex] = useState<number>(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
@@ -576,6 +592,7 @@ export default function App() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [selectedFilter, setSelectedFilter] = useState<string>("all");
   const [bannerIndex, setBannerIndex] = useState<number>(0);
+  const [bannerTrackIndex, setBannerTrackIndex] = useState<number>(0);
   const [backgroundIndex, setBackgroundIndex] = useState<number>(0);
 
   // Lazily create audio element once
@@ -584,7 +601,22 @@ export default function App() {
   }
 
   const currentRelease = useMemo(() => RELEASES[currentIndex], [currentIndex]);
+  const currentTrack = useMemo(() => {
+    if (currentRelease?.tracks && currentRelease.tracks.length > 0) {
+      return (
+        currentRelease.tracks[currentTrackIndex] || currentRelease.tracks[0]
+      );
+    }
+    return null;
+  }, [currentRelease, currentTrackIndex]);
+
   const bannerRelease = useMemo(() => RELEASES[bannerIndex], [bannerIndex]);
+  const bannerTrack = useMemo(() => {
+    if (bannerRelease?.tracks && bannerRelease.tracks.length > 0) {
+      return bannerRelease.tracks[bannerTrackIndex] || bannerRelease.tracks[0];
+    }
+    return null;
+  }, [bannerRelease, bannerTrackIndex]);
 
   // Filter releases based on selected filter
   const filteredReleases = useMemo(() => {
@@ -609,7 +641,16 @@ export default function App() {
       const idxInFiltered = Math.floor(Math.random() * candidates.length);
       const id = candidates[idxInFiltered].id;
       const idxInAll = RELEASES.findIndex((r) => r.id === id);
-      if (idxInAll !== -1) setBannerIndex(idxInAll);
+      if (idxInAll !== -1) {
+        setBannerIndex(idxInAll);
+        const release = RELEASES[idxInAll];
+        // Set banner track to first track if available
+        if (release?.tracks && release.tracks.length > 0) {
+          setBannerTrackIndex(0);
+        } else {
+          setBannerTrackIndex(0);
+        }
+      }
     };
     setRandomBanner();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -635,41 +676,119 @@ export default function App() {
 
   useEffect(() => {
     const audio = audioRef.current!;
-    // For demo purposes, we'll use a placeholder audio source
-    audio.src = "https://www.soundjay.com/misc/sounds/button-1.mp3";
+
+    // Use actual track audio if available
+    if (currentTrack?.path) {
+      audio.src = currentTrack.path;
+      setDuration(currentTrack.duration);
+    } else {
+      // Fallback to placeholder if no track
+      audio.src = "https://www.soundjay.com/misc/sounds/button-1.mp3";
+    }
+
     audio.volume = volume;
-    const onLoaded = () => setDuration(audio.duration || 0);
+
+    const onLoaded = () => {
+      if (!currentTrack?.duration) {
+        setDuration(audio.duration || 0);
+      }
+    };
     const onTime = () => setCurrentTime(audio.currentTime || 0);
+    const onEnded = () => {
+      // Auto-play next track when current ends
+      if (currentRelease?.tracks && currentRelease.tracks.length > 0) {
+        if (currentTrackIndex < currentRelease.tracks.length - 1) {
+          setCurrentTrackIndex(currentTrackIndex + 1);
+          return;
+        }
+      }
+      const nextIndex = (currentIndex + 1) % RELEASES.length;
+      setCurrentIndex(nextIndex);
+      setCurrentTrackIndex(0);
+    };
+
     audio.addEventListener("loadedmetadata", onLoaded);
     audio.addEventListener("timeupdate", onTime);
-    if (isPlaying) audio.play().catch(() => setIsPlaying(false));
-    else audio.pause();
+    audio.addEventListener("ended", onEnded);
+
+    if (isPlaying) {
+      audio.play().catch(() => setIsPlaying(false));
+    } else {
+      audio.pause();
+    }
+
     return () => {
       audio.removeEventListener("loadedmetadata", onLoaded);
       audio.removeEventListener("timeupdate", onTime);
+      audio.removeEventListener("ended", onEnded);
     };
-  }, [currentRelease, isPlaying, volume]);
+  }, [
+    currentRelease,
+    currentTrack,
+    currentIndex,
+    currentTrackIndex,
+    isPlaying,
+    volume,
+  ]);
 
   const handlePlayPause = () => setIsPlaying((p) => !p);
-  const handlePrev = () =>
-    setCurrentIndex((i) => (i - 1 + RELEASES.length) % RELEASES.length);
-  const handleNext = () => setCurrentIndex((i) => (i + 1) % RELEASES.length);
+
+  const handlePrev = () => {
+    if (currentRelease?.tracks && currentRelease.tracks.length > 0) {
+      // If we're not on the first track, go to previous track
+      if (currentTrackIndex > 0) {
+        setCurrentTrackIndex(currentTrackIndex - 1);
+        return;
+      }
+    }
+    // Otherwise go to previous release
+    const prevIndex = (currentIndex - 1 + RELEASES.length) % RELEASES.length;
+    setCurrentIndex(prevIndex);
+    const prevRelease = RELEASES[prevIndex];
+    if (prevRelease?.tracks && prevRelease.tracks.length > 0) {
+      setCurrentTrackIndex(prevRelease.tracks.length - 1);
+    } else {
+      setCurrentTrackIndex(0);
+    }
+  };
+
+  const handleNext = () => {
+    if (currentRelease?.tracks && currentRelease.tracks.length > 0) {
+      // If we're not on the last track, go to next track
+      if (currentTrackIndex < currentRelease.tracks.length - 1) {
+        setCurrentTrackIndex(currentTrackIndex + 1);
+        return;
+      }
+    }
+    // Otherwise go to next release
+    const nextIndex = (currentIndex + 1) % RELEASES.length;
+    setCurrentIndex(nextIndex);
+    setCurrentTrackIndex(0);
+  };
   const handleSeek = (time: number) => {
     const audio = audioRef.current!;
     audio.currentTime = time;
     setCurrentTime(time);
   };
   const handleBannerPlay = () => {
-    if (currentIndex === bannerIndex) {
+    if (
+      currentIndex === bannerIndex &&
+      currentTrackIndex === bannerTrackIndex
+    ) {
       setIsPlaying((p) => !p);
     } else {
       setCurrentIndex(bannerIndex);
+      setCurrentTrackIndex(bannerTrackIndex);
       setIsPlaying(true);
     }
   };
   const handleBannerSeek = (time: number) => {
-    if (currentIndex !== bannerIndex) {
+    if (
+      currentIndex !== bannerIndex ||
+      currentTrackIndex !== bannerTrackIndex
+    ) {
       setCurrentIndex(bannerIndex);
+      setCurrentTrackIndex(bannerTrackIndex);
       setIsPlaying(true);
     }
     const audio = audioRef.current!;
@@ -683,6 +802,7 @@ export default function App() {
   };
   const enqueueAndPlay = (idx: number) => {
     setCurrentIndex(idx);
+    setCurrentTrackIndex(0); // Start with first track
     setIsPlaying(true);
     setQueue((q) => [...q.filter((i) => i !== idx), idx]);
   };
@@ -726,9 +846,25 @@ export default function App() {
         <main className="min-h-[calc(100vh-12rem)] overflow-y-auto">
           <TopBannerPlayer
             release={bannerRelease}
-            isActive={isPlaying && currentIndex === bannerIndex}
-            currentTime={currentIndex === bannerIndex ? currentTime : 0}
-            duration={currentIndex === bannerIndex ? duration : duration}
+            track={bannerTrack}
+            isActive={
+              isPlaying &&
+              currentIndex === bannerIndex &&
+              currentTrackIndex === bannerTrackIndex
+            }
+            currentTime={
+              currentIndex === bannerIndex &&
+              currentTrackIndex === bannerTrackIndex
+                ? currentTime
+                : 0
+            }
+            duration={
+              bannerTrack?.duration ||
+              (currentIndex === bannerIndex &&
+              currentTrackIndex === bannerTrackIndex
+                ? duration
+                : 0)
+            }
             onPlay={handleBannerPlay}
             onSeek={handleBannerSeek}
           />
@@ -752,6 +888,7 @@ export default function App() {
       </div>
       <AudioPlayer
         release={currentRelease}
+        track={currentTrack}
         isPlaying={isPlaying}
         currentTime={currentTime}
         duration={duration}

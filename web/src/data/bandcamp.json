@@ -7,7 +7,44 @@
     "cover": "/artwork/album-2947447909.jpg",
     "url": "https://format416.bandcamp.com/album/doom-scrolling",
     "duration": "TBD",
-    "type": "album"
+    "type": "album",
+    "tracks": [
+      {
+        "id": 1827335907,
+        "title": "Virtual Isolation",
+        "duration": 385.714,
+        "path": "/audio/1827335907-virtual-isolation.mp3",
+        "trackNumber": 1
+      },
+      {
+        "id": 1535150791,
+        "title": "Doom Scrolling",
+        "duration": 420,
+        "path": "/audio/1535150791-doom-scrolling.mp3",
+        "trackNumber": 2
+      },
+      {
+        "id": 31071257,
+        "title": "Anonymity",
+        "duration": 345.321,
+        "path": "/audio/31071257-anonymity.mp3",
+        "trackNumber": 3
+      },
+      {
+        "id": 4127277315,
+        "title": "Better Offline",
+        "duration": 532.342,
+        "path": "/audio/4127277315-better-offline.mp3",
+        "trackNumber": 4
+      },
+      {
+        "id": 3448221351,
+        "title": "Doom Scrolling (Jeff Cochran Doom Mix)",
+        "duration": 354.93,
+        "path": "/audio/3448221351-doom-scrolling-jeff-cochran-doom-mix.mp3",
+        "trackNumber": 5
+      }
+    ]
   },
   {
     "id": "album-4044454092",
@@ -17,7 +54,51 @@
     "cover": "/artwork/album-4044454092.jpg",
     "url": "https://format416.bandcamp.com/album/1995-called",
     "duration": "TBD",
-    "type": "album"
+    "type": "album",
+    "tracks": [
+      {
+        "id": 1645446841,
+        "title": "Break It Down",
+        "duration": 311.304,
+        "path": "/audio/1645446841-break-it-down.mp3",
+        "trackNumber": 1
+      },
+      {
+        "id": 586259441,
+        "title": "1995 Called...",
+        "duration": 293.036,
+        "path": "/audio/586259441-1995-called.mp3",
+        "trackNumber": 2
+      },
+      {
+        "id": 704393047,
+        "title": "Downwards Not Upwards",
+        "duration": 360.107,
+        "path": "/audio/704393047-downwards-not-upwards.mp3",
+        "trackNumber": 3
+      },
+      {
+        "id": 473512133,
+        "title": "Jungle Gym",
+        "duration": 281.036,
+        "path": "/audio/473512133-jungle-gym.mp3",
+        "trackNumber": 4
+      },
+      {
+        "id": 4162369529,
+        "title": "1995 Called... (Salem's 416 Mix)",
+        "duration": 300.87,
+        "path": "/audio/4162369529-1995-called-salem-s-416-mix.mp3",
+        "trackNumber": 5
+      },
+      {
+        "id": 208474165,
+        "title": "Break It Down (Sinelanguage's Break It Mix)",
+        "duration": 308.571,
+        "path": "/audio/208474165-break-it-down-sinelanguage-s-break-it-mix.mp3",
+        "trackNumber": 6
+      }
+    ]
   },
   {
     "id": "album-2644710796",
@@ -27,7 +108,37 @@
     "cover": "/artwork/album-2644710796.jpg",
     "url": "https://format416.bandcamp.com/album/friendship",
     "duration": "TBD",
-    "type": "album"
+    "type": "album",
+    "tracks": [
+      {
+        "id": 4047208349,
+        "title": "Unbreakable Spirit",
+        "duration": 414.643,
+        "path": "/audio/4047208349-unbreakable-spirit.mp3",
+        "trackNumber": 1
+      },
+      {
+        "id": 1587469068,
+        "title": "Friendship",
+        "duration": 554.786,
+        "path": "/audio/1587469068-friendship.mp3",
+        "trackNumber": 2
+      },
+      {
+        "id": 2746740136,
+        "title": "For Tracey Anne",
+        "duration": 520.729,
+        "path": "/audio/2746740136-for-tracey-anne.mp3",
+        "trackNumber": 3
+      },
+      {
+        "id": 3497623865,
+        "title": "Believe",
+        "duration": 394.348,
+        "path": "/audio/3497623865-believe.mp3",
+        "trackNumber": 4
+      }
+    ]
   },
   {
     "id": "album-4043366788",
@@ -37,7 +148,51 @@
     "cover": "/artwork/album-4043366788.jpg",
     "url": "https://format416.bandcamp.com/album/aurora-borealis",
     "duration": "TBD",
-    "type": "album"
+    "type": "album",
+    "tracks": [
+      {
+        "id": 637767702,
+        "title": "Ambulance in Delhi",
+        "duration": 315.547,
+        "path": "/audio/637767702-ambulance-in-delhi.mp3",
+        "trackNumber": 1
+      },
+      {
+        "id": 511625660,
+        "title": "Aurora Borealis",
+        "duration": 336.107,
+        "path": "/audio/511625660-aurora-borealis.mp3",
+        "trackNumber": 2
+      },
+      {
+        "id": 3292455684,
+        "title": "Dog Park",
+        "duration": 289.412,
+        "path": "/audio/3292455684-dog-park.mp3",
+        "trackNumber": 3
+      },
+      {
+        "id": 3493770044,
+        "title": "Dredge",
+        "duration": 313.043,
+        "path": "/audio/3493770044-dredge.mp3",
+        "trackNumber": 4
+      },
+      {
+        "id": 3264232689,
+        "title": "Mousetrap",
+        "duration": 267.429,
+        "path": "/audio/3264232689-mousetrap.mp3",
+        "trackNumber": 5
+      },
+      {
+        "id": 1761190406,
+        "title": "Thermal",
+        "duration": 336.214,
+        "path": "/audio/1761190406-thermal.mp3",
+        "trackNumber": 6
+      }
+    ]
   },
   {
     "id": "album-2873451879",
@@ -47,7 +202,79 @@
     "cover": "/artwork/album-2873451879.jpg",
     "url": "https://format416.bandcamp.com/album/creaky-stair-lp",
     "duration": "TBD",
-    "type": "album"
+    "type": "album",
+    "tracks": [
+      {
+        "id": 1186191545,
+        "title": "Intro",
+        "duration": 240.643,
+        "path": "/audio/1186191545-intro.mp3",
+        "trackNumber": 1
+      },
+      {
+        "id": 2935377764,
+        "title": "Bird Song",
+        "duration": 363.429,
+        "path": "/audio/2935377764-bird-song.mp3",
+        "trackNumber": 2
+      },
+      {
+        "id": 3239196446,
+        "title": "Creaky Stair",
+        "duration": 444,
+        "path": "/audio/3239196446-creaky-stair.mp3",
+        "trackNumber": 3
+      },
+      {
+        "id": 915313946,
+        "title": "Light Your Candle",
+        "duration": 281.036,
+        "path": "/audio/915313946-light-your-candle.mp3",
+        "trackNumber": 4
+      },
+      {
+        "id": 4288411811,
+        "title": "Pander",
+        "duration": 334.286,
+        "path": "/audio/4288411811-pander.mp3",
+        "trackNumber": 5
+      },
+      {
+        "id": 2142572429,
+        "title": "Interlude",
+        "duration": 182.885,
+        "path": "/audio/2142572429-interlude.mp3",
+        "trackNumber": 6
+      },
+      {
+        "id": 527627028,
+        "title": "Coastin'",
+        "duration": 311.893,
+        "path": "/audio/527627028-coastin.mp3",
+        "trackNumber": 7
+      },
+      {
+        "id": 834643668,
+        "title": "Space and Time",
+        "duration": 318,
+        "path": "/audio/834643668-space-and-time.mp3",
+        "trackNumber": 8
+      },
+      {
+        "id": 1591056990,
+        "title": "Twister",
+        "duration": 377.25,
+        "path": "/audio/1591056990-twister.mp3",
+        "trackNumber": 9
+      },
+      {
+        "id": 3550422178,
+        "title": "Rumblin'",
+        "duration": 308.571,
+        "path": "/audio/3550422178-rumblin.mp3",
+        "trackNumber": 10
+      }
+    ]
   },
   {
     "id": "album-3126053548",
@@ -57,7 +284,44 @@
     "cover": "/artwork/album-3126053548.jpg",
     "url": "https://format416.bandcamp.com/album/dimensionally-displaced-individuals",
     "duration": "TBD",
-    "type": "album"
+    "type": "album",
+    "tracks": [
+      {
+        "id": 2945698539,
+        "title": "The Mystery in Her Deep Blue Eyes",
+        "duration": 490.217,
+        "path": "/audio/2945698539-the-mystery-in-her-deep-blue-eyes.mp3",
+        "trackNumber": 1
+      },
+      {
+        "id": 3521610347,
+        "title": "Dimensionally Displaced Individuals",
+        "duration": 339.833,
+        "path": "/audio/3521610347-dimensionally-displaced-individuals.mp3",
+        "trackNumber": 2
+      },
+      {
+        "id": 3264532021,
+        "title": "The Man From Jersey Returns",
+        "duration": 600.462,
+        "path": "/audio/3264532021-the-man-from-jersey-returns.mp3",
+        "trackNumber": 3
+      },
+      {
+        "id": 3582324579,
+        "title": "Memory Recall Functions",
+        "duration": 294.857,
+        "path": "/audio/3582324579-memory-recall-functions.mp3",
+        "trackNumber": 4
+      },
+      {
+        "id": 824091357,
+        "title": "Sunday, My Mojo, My House",
+        "duration": 422.667,
+        "path": "/audio/824091357-sunday-my-mojo-my-house.mp3",
+        "trackNumber": 5
+      }
+    ]
   },
   {
     "id": "track-1113298458",
@@ -77,7 +341,51 @@
     "cover": "/artwork/album-236675722.jpg",
     "url": "https://format416.bandcamp.com/album/full-bleed-ep",
     "duration": "TBD",
-    "type": "ep"
+    "type": "ep",
+    "tracks": [
+      {
+        "id": 2117706185,
+        "title": "The Itch",
+        "duration": 302.222,
+        "path": "/audio/2117706185-the-itch.mp3",
+        "trackNumber": 1
+      },
+      {
+        "id": 4029299069,
+        "title": "Minimal Alarmism (Acid Drop Mix)",
+        "duration": 319.904,
+        "path": "/audio/4029299069-minimal-alarmism-acid-drop-mix.mp3",
+        "trackNumber": 2
+      },
+      {
+        "id": 3415560775,
+        "title": "Minimal Alarmism (Techno Mix)",
+        "duration": 237.107,
+        "path": "/audio/3415560775-minimal-alarmism-techno-mix.mp3",
+        "trackNumber": 3
+      },
+      {
+        "id": 1727520537,
+        "title": "Turkish Breakfast Food",
+        "duration": 577.088,
+        "path": "/audio/1727520537-turkish-breakfast-food.mp3",
+        "trackNumber": 4
+      },
+      {
+        "id": 1742787249,
+        "title": "Full Bleed",
+        "duration": 345.429,
+        "path": "/audio/1742787249-full-bleed.mp3",
+        "trackNumber": 5
+      },
+      {
+        "id": 3398887829,
+        "title": "Backhanded Groove",
+        "duration": 233.5,
+        "path": "/audio/3398887829-backhanded-groove.mp3",
+        "trackNumber": 6
+      }
+    ]
   },
   {
     "id": "album-3758417641",
@@ -87,7 +395,44 @@
     "cover": "/artwork/album-3758417641.jpg",
     "url": "https://format416.bandcamp.com/album/generation-ep",
     "duration": "TBD",
-    "type": "ep"
+    "type": "ep",
+    "tracks": [
+      {
+        "id": 1318757424,
+        "title": "Advent Calendar",
+        "duration": 309.857,
+        "path": "/audio/1318757424-advent-calendar.mp3",
+        "trackNumber": 1
+      },
+      {
+        "id": 2607869856,
+        "title": "American Horror Story",
+        "duration": 292.941,
+        "path": "/audio/2607869856-american-horror-story.mp3",
+        "trackNumber": 2
+      },
+      {
+        "id": 2281346415,
+        "title": "Generation",
+        "duration": 373.889,
+        "path": "/audio/2281346415-generation.mp3",
+        "trackNumber": 3
+      },
+      {
+        "id": 3210748292,
+        "title": "Takeoff",
+        "duration": 327.222,
+        "path": "/audio/3210748292-takeoff.mp3",
+        "trackNumber": 4
+      },
+      {
+        "id": 1001207959,
+        "title": "Tribal Snow",
+        "duration": 410.667,
+        "path": "/audio/1001207959-tribal-snow.mp3",
+        "trackNumber": 5
+      }
+    ]
   },
   {
     "id": "album-3749389981",
@@ -97,7 +442,44 @@
     "cover": "/artwork/album-3749389981.jpg",
     "url": "https://format416.bandcamp.com/album/that-sounds-like-fun-to-me-ep",
     "duration": "TBD",
-    "type": "ep"
+    "type": "ep",
+    "tracks": [
+      {
+        "id": 4146358563,
+        "title": "Let It Rain",
+        "duration": 345.444,
+        "path": "/audio/4146358563-let-it-rain.mp3",
+        "trackNumber": 1
+      },
+      {
+        "id": 5474626,
+        "title": "Snow Squall",
+        "duration": 320.111,
+        "path": "/audio/5474626-snow-squall.mp3",
+        "trackNumber": 2
+      },
+      {
+        "id": 3741798697,
+        "title": "Surf N' Turf",
+        "duration": 387.692,
+        "path": "/audio/3741798697-surf-n-turf.mp3",
+        "trackNumber": 3
+      },
+      {
+        "id": 4085222298,
+        "title": "That Sounds Like Fun To Me",
+        "duration": 346.32,
+        "path": "/audio/4085222298-that-sounds-like-fun-to-me.mp3",
+        "trackNumber": 4
+      },
+      {
+        "id": 4281912102,
+        "title": "The Little Engine That Could",
+        "duration": 316.444,
+        "path": "/audio/4281912102-the-little-engine-that-could.mp3",
+        "trackNumber": 5
+      }
+    ]
   },
   {
     "id": "album-2670299859",
@@ -107,7 +489,44 @@
     "cover": "/artwork/album-2670299859.jpg",
     "url": "https://format416.bandcamp.com/album/dip-a-toe-ep",
     "duration": "TBD",
-    "type": "ep"
+    "type": "ep",
+    "tracks": [
+      {
+        "id": 702167999,
+        "title": "A Million Miles",
+        "duration": 373.333,
+        "path": "/audio/702167999-a-million-miles.mp3",
+        "trackNumber": 1
+      },
+      {
+        "id": 2916492985,
+        "title": "Dip A Toe",
+        "duration": 373.333,
+        "path": "/audio/2916492985-dip-a-toe.mp3",
+        "trackNumber": 2
+      },
+      {
+        "id": 1589597832,
+        "title": "Dither Me Timbers",
+        "duration": 272,
+        "path": "/audio/1589597832-dither-me-timbers.mp3",
+        "trackNumber": 3
+      },
+      {
+        "id": 3064171665,
+        "title": "FaM",
+        "duration": 302.769,
+        "path": "/audio/3064171665-fam.mp3",
+        "trackNumber": 4
+      },
+      {
+        "id": 1888443933,
+        "title": "First Snow",
+        "duration": 280.385,
+        "path": "/audio/1888443933-first-snow.mp3",
+        "trackNumber": 5
+      }
+    ]
   },
   {
     "id": "album-4113946973",
@@ -117,7 +536,51 @@
     "cover": "/artwork/album-4113946973.jpg",
     "url": "https://format416.bandcamp.com/album/seasons-change-ep",
     "duration": "TBD",
-    "type": "ep"
+    "type": "ep",
+    "tracks": [
+      {
+        "id": 1422384661,
+        "title": "Bend and Warp",
+        "duration": 374.538,
+        "path": "/audio/1422384661-bend-and-warp.mp3",
+        "trackNumber": 1
+      },
+      {
+        "id": 143616569,
+        "title": "Riding the Cloud",
+        "duration": 172.444,
+        "path": "/audio/143616569-riding-the-cloud.mp3",
+        "trackNumber": 2
+      },
+      {
+        "id": 114017972,
+        "title": "RIP Taylor",
+        "duration": 385.846,
+        "path": "/audio/114017972-rip-taylor.mp3",
+        "trackNumber": 3
+      },
+      {
+        "id": 1511865784,
+        "title": "Seasons Change",
+        "duration": 437.333,
+        "path": "/audio/1511865784-seasons-change.mp3",
+        "trackNumber": 4
+      },
+      {
+        "id": 1015844744,
+        "title": "Softly",
+        "duration": 328.615,
+        "path": "/audio/1015844744-softly.mp3",
+        "trackNumber": 5
+      },
+      {
+        "id": 1675185300,
+        "title": "Voice On The Wind",
+        "duration": 373.333,
+        "path": "/audio/1675185300-voice-on-the-wind.mp3",
+        "trackNumber": 6
+      }
+    ]
   },
   {
     "id": "album-1180689540",
@@ -127,7 +590,44 @@
     "cover": "/artwork/album-1180689540.jpg",
     "url": "https://format416.bandcamp.com/album/jig-is-up-ep",
     "duration": "TBD",
-    "type": "ep"
+    "type": "ep",
+    "tracks": [
+      {
+        "id": 526755064,
+        "title": "Jig Is Up",
+        "duration": 320.556,
+        "path": "/audio/526755064-jig-is-up.mp3",
+        "trackNumber": 1
+      },
+      {
+        "id": 3034132478,
+        "title": "MidDay",
+        "duration": 293.333,
+        "path": "/audio/3034132478-midday.mp3",
+        "trackNumber": 2
+      },
+      {
+        "id": 2169172147,
+        "title": "Munch",
+        "duration": 451.2,
+        "path": "/audio/2169172147-munch.mp3",
+        "trackNumber": 3
+      },
+      {
+        "id": 1653938468,
+        "title": "Saturday Night Drone",
+        "duration": 387.692,
+        "path": "/audio/1653938468-saturday-night-drone.mp3",
+        "trackNumber": 4
+      },
+      {
+        "id": 1569627857,
+        "title": "Warmin'",
+        "duration": 327.637,
+        "path": "/audio/1569627857-warmin.mp3",
+        "trackNumber": 5
+      }
+    ]
   },
   {
     "id": "album-2362784072",
@@ -137,7 +637,44 @@
     "cover": "/artwork/album-2362784072.jpg",
     "url": "https://format416.bandcamp.com/album/make-a-wish-ep",
     "duration": "TBD",
-    "type": "ep"
+    "type": "ep",
+    "tracks": [
+      {
+        "id": 2942811209,
+        "title": "Juicy Fruit",
+        "duration": 345.008,
+        "path": "/audio/2942811209-juicy-fruit.mp3",
+        "trackNumber": 1
+      },
+      {
+        "id": 2265854549,
+        "title": "Loose Tooth",
+        "duration": 322.565,
+        "path": "/audio/2265854549-loose-tooth.mp3",
+        "trackNumber": 2
+      },
+      {
+        "id": 782665759,
+        "title": "Make a Wish",
+        "duration": 318.222,
+        "path": "/audio/782665759-make-a-wish.mp3",
+        "trackNumber": 3
+      },
+      {
+        "id": 4060123314,
+        "title": "Mind of Its Own",
+        "duration": 338.667,
+        "path": "/audio/4060123314-mind-of-its-own.mp3",
+        "trackNumber": 4
+      },
+      {
+        "id": 3699055538,
+        "title": "Running on Empty",
+        "duration": 316.444,
+        "path": "/audio/3699055538-running-on-empty.mp3",
+        "trackNumber": 5
+      }
+    ]
   },
   {
     "id": "album-2811958697",
@@ -147,6 +684,78 @@
     "cover": "/artwork/album-2919376168.jpg",
     "url": "https://format416.bandcamp.com/album/day-after-tomorrow",
     "duration": "TBD",
-    "type": "album"
+    "type": "album",
+    "tracks": [
+      {
+        "id": 1507772093,
+        "title": "Basically",
+        "duration": 283.478,
+        "path": "/audio/1507772093-basically.mp3",
+        "trackNumber": 1
+      },
+      {
+        "id": 2779068536,
+        "title": "Day After Tomorrow",
+        "duration": 340.761,
+        "path": "/audio/2779068536-day-after-tomorrow.mp3",
+        "trackNumber": 2
+      },
+      {
+        "id": 909472951,
+        "title": "Rack 'Em Up",
+        "duration": 332.571,
+        "path": "/audio/909472951-rack-em-up.mp3",
+        "trackNumber": 3
+      },
+      {
+        "id": 2061565538,
+        "title": "Ocean Floor",
+        "duration": 306.857,
+        "path": "/audio/2061565538-ocean-floor.mp3",
+        "trackNumber": 4
+      },
+      {
+        "id": 2664558418,
+        "title": "Red Boom",
+        "duration": 311.304,
+        "path": "/audio/2664558418-red-boom.mp3",
+        "trackNumber": 5
+      },
+      {
+        "id": 1190402913,
+        "title": "Whisper",
+        "duration": 311.304,
+        "path": "/audio/1190402913-whisper.mp3",
+        "trackNumber": 6
+      },
+      {
+        "id": 145221786,
+        "title": "Push It",
+        "duration": 306.857,
+        "path": "/audio/145221786-push-it.mp3",
+        "trackNumber": 7
+      },
+      {
+        "id": 446328452,
+        "title": "Bouncing Ball",
+        "duration": 389.143,
+        "path": "/audio/446328452-bouncing-ball.mp3",
+        "trackNumber": 8
+      },
+      {
+        "id": 1984618187,
+        "title": "Mergence",
+        "duration": 308.464,
+        "path": "/audio/1984618187-mergence.mp3",
+        "trackNumber": 9
+      },
+      {
+        "id": 3552083769,
+        "title": "Back Equals Front",
+        "duration": 297.391,
+        "path": "/audio/3552083769-back-equals-front.mp3",
+        "trackNumber": 10
+      }
+    ]
   }
 ]
