@@ -312,7 +312,6 @@ function TopBannerPlayer({
       hideScrollbar: true,
       interact: false,
       backend: "WebAudio",
-      pixelRatio: window.devicePixelRatio || 2,
       // Custom render function for mirrored/reflected waveform like SoundCloud
       renderFunction: (channels, ctx) => {
         const { width, height } = ctx.canvas;
@@ -412,9 +411,19 @@ function TopBannerPlayer({
   return (
     <div className="px-4 mt-4">
       <Card className="relative w-full overflow-hidden bg-neutral-900/50">
-        {/* Background gradient */}
+        {/* Blurred artwork background */}
         <div className="absolute inset-0 z-0">
-          <div className="absolute inset-0 bg-gradient-to-b from-neutral-800 to-neutral-900" />
+          <div className="absolute inset-0 bg-neutral-950" />
+          <div
+            className="absolute inset-0 opacity-60"
+            style={{
+              backgroundImage: `url(${getAssetUrl(release.cover)})`,
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+              filter: "blur(28px) saturate(115%) brightness(0.6)",
+            }}
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-neutral-950/70 via-neutral-950/40 to-neutral-950/80" />
         </div>
 
         {/* Waveform layer - behind content but not artwork */}
