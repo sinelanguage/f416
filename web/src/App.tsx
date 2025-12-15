@@ -299,26 +299,42 @@ function TopBannerPlayer({
       container: waveformRef.current,
       height:
         window.innerWidth >= 768 ? 72 : window.innerWidth >= 640 ? 56 : 48,
-      // Gradient colors for unplayed portion
-      waveColor: ["rgba(255, 255, 255, 0.4)", "rgba(255, 255, 255, 0.15)"],
-      // Gradient colors for played portion
-      progressColor: ["rgba(255, 255, 255, 1)", "rgba(255, 255, 255, 0.5)"],
+      waveColor: "rgba(255, 255, 255, 0.3)",
+      progressColor: "rgba(255, 255, 255, 0.9)",
       cursorColor: "transparent",
       cursorWidth: 0,
       barWidth: 2,
       barGap: 1,
       barRadius: 2,
-      barAlign: "bottom",
       minPxPerSec: 1,
       fillParent: true,
-      autoCenter: false,
-      normalize: false, // Don't normalize - shows true dynamic range
+      normalize: false,
       hideScrollbar: true,
       interact: false,
-      // WebAudio backend for better quality
       backend: "WebAudio",
-      // Higher resolution
       pixelRatio: window.devicePixelRatio || 2,
+      // Custom render function for mirrored/reflected waveform
+      renderFunction: (channels, ctx) => {
+        const { width, height } = ctx.canvas;
+        const channel = channels[0];
+        const step = width / channel.length;
+        const halfHeight = height / 2;
+
+        ctx.clearRect(0, 0, width, height);
+
+        // Draw bars mirrored from center
+        for (let i = 0; i < channel.length; i++) {
+          const x = i * step;
+          const barHeight = channel[i] * halfHeight;
+
+          // Top half (mirrored)
+          ctx.fillStyle = "rgba(255, 255, 255, 0.3)";
+          ctx.fillRect(x, halfHeight - barHeight, 2, barHeight);
+
+          // Bottom half (reflection)
+          ctx.fillRect(x, halfHeight, 2, barHeight);
+        }
+      },
     });
 
     wavesurferRef.current = wavesurfer;
@@ -361,7 +377,9 @@ function TopBannerPlayer({
     const handleResize = () => {
       const height =
         window.innerWidth >= 768 ? 72 : window.innerWidth >= 640 ? 56 : 48;
-      wavesurferRef.current?.setOptions({ height });
+      if (wavesurferRef.current) {
+        wavesurferRef.current.setOptions({ height });
+      }
     };
 
     window.addEventListener("resize", handleResize);
