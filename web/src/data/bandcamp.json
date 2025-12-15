@@ -67,7 +67,7 @@
     "cover": "/artwork/track-1113298458.jpg",
     "url": "https://format416.bandcamp.com/track/angularone",
     "duration": "TBD",
-    "type": "single"
+    "type": "ep"
   },
   {
     "id": "album-236675722",
@@ -138,5 +138,15 @@
     "url": "https://format416.bandcamp.com/album/make-a-wish-ep",
     "duration": "TBD",
     "type": "ep"
+  },
+  {
+    "id": "album-2811958697",
+    "title": "Day After Tomorrow",
+    "artist": "Jeff Cochran",
+    "releaseDate": "TBD",
+    "cover": "/artwork/album-2919376168.jpg",
+    "url": "https://format416.bandcamp.com/album/day-after-tomorrow",
+    "duration": "TBD",
+    "type": "album"
   }
 ]
