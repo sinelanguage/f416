@@ -11,6 +11,11 @@ node_modules
 dist
 dist-ssr
 *.local
+.env.production
+
+# Media files (should be uploaded to CDN, not committed)
+public/audio/*.mp3
+public/artwork/*.jpg
 
 # Editor directories and files
 .vscode/*

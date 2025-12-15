@@ -20,6 +20,7 @@ import { Card } from "./components/ui/card";
 
 import { Sheet, SheetContent } from "./components/ui/sheet";
 import bandcampData from "./data/bandcamp.json";
+import { getAssetUrl } from "./config";
 
 type Track = {
   id: number;
@@ -236,7 +237,7 @@ function AlbumCard({
     >
       <div className="relative rounded-xl overflow-hidden bg-neutral-900/80 group-hover:bg-neutral-900/90 transition-colors">
         <img
-          src={release.cover}
+          src={getAssetUrl(release.cover)}
           alt={`${release.title} cover`}
           className="w-full h-32 sm:h-36 md:h-44 object-cover rounded-xl"
         />
@@ -343,7 +344,7 @@ function TopBannerPlayer({
           <div
             className="absolute right-0 top-0 h-full w-1/2 md:w-2/5"
             style={{
-              backgroundImage: `url(${release.cover})`,
+              backgroundImage: `url(${getAssetUrl(release.cover)})`,
               backgroundSize: "cover",
               backgroundPosition: "center",
               filter: "blur(12px) saturate(120%)",
@@ -386,7 +387,7 @@ function TopBannerPlayer({
           {/* Artwork card on the right */}
           <div className="hidden sm:block ml-auto mb-4">
             <img
-              src={release.cover}
+              src={getAssetUrl(release.cover)}
               alt={`${release.title} cover`}
               className="h-40 w-40 md:h-56 md:w-56 object-cover rounded-xl shadow-md"
             />
@@ -481,7 +482,7 @@ function AudioPlayer({
     <footer className="h-16 md:h-20 px-3 md:px-4 flex items-center gap-2 md:gap-4 sticky bottom-0 backdrop-blur">
       <div className="flex items-center gap-2 md:gap-3 min-w-0 flex-1 md:flex-initial">
         <img
-          src={release.cover}
+          src={getAssetUrl(release.cover)}
           className="size-10 md:size-12 rounded object-cover"
           alt="cover"
         />
@@ -679,7 +680,7 @@ export default function App() {
 
     // Use actual track audio if available
     if (currentTrack?.path) {
-      audio.src = currentTrack.path;
+      audio.src = getAssetUrl(currentTrack.path);
       setDuration(currentTrack.duration);
     } else {
       // Fallback to placeholder if no track
@@ -818,7 +819,9 @@ export default function App() {
         <div
           className="absolute inset-0 opacity-60"
           style={{
-            backgroundImage: `url(${RELEASES[backgroundIndex]?.cover})`,
+            backgroundImage: `url(${getAssetUrl(
+              RELEASES[backgroundIndex]?.cover || ""
+            )})`,
             backgroundSize: "cover",
             backgroundPosition: "center",
             filter: "blur(28px) saturate(115%) brightness(0.6)",
@@ -1011,7 +1014,7 @@ export default function App() {
                 className="w-full flex items-center gap-3 text-left p-2 hover:bg-neutral-900/50"
               >
                 <img
-                  src={RELEASES[idx].cover}
+                  src={getAssetUrl(RELEASES[idx].cover)}
                   alt={RELEASES[idx].title}
                   className="size-10 object-cover"
                 />
