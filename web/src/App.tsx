@@ -313,8 +313,8 @@ function TopBannerPlayer({
         window.innerWidth >= 768 ? 90 : window.innerWidth >= 640 ? 70 : 60,
       waveColor: "rgba(255, 255, 255, 0.3)",
       progressColor: "rgba(255, 255, 255, 0.9)",
-      cursorColor: "transparent",
-      cursorWidth: 0,
+      cursorColor: "rgba(255, 255, 255, 1)",
+      cursorWidth: 2,
       barWidth: 3,
       barGap: 1,
       barRadius: 2,
@@ -356,11 +356,11 @@ function TopBannerPlayer({
           const amplitude = Math.abs(channel[channelIndex] || 0);
           const barHeight = amplitude * halfHeight * 0.9; // 0.9 to leave some space at edges
 
-          // Choose color based on progress
+          // Choose color based on progress - orange for played, subtle white for unplayed
           const isPlayed = barProgress <= progressRatio;
           ctx.fillStyle = isPlayed
-            ? "rgba(255, 255, 255, 0.95)"
-            : "rgba(255, 255, 255, 0.25)";
+            ? "rgba(255, 85, 0, 1)"
+            : "rgba(255, 255, 255, 0.15)";
 
           // Top half (mirrored up from center)
           ctx.fillRect(x, halfHeight - barHeight, barWidth, barHeight);
@@ -612,8 +612,8 @@ function AudioPlayer({
       height: 36,
       waveColor: "rgba(255, 255, 255, 0.3)",
       progressColor: "rgba(255, 255, 255, 0.9)",
-      cursorColor: "transparent",
-      cursorWidth: 0,
+      cursorColor: "rgba(255, 255, 255, 1)",
+      cursorWidth: 2,
       barWidth: 2,
       barGap: 1,
       barRadius: 2,
@@ -655,11 +655,11 @@ function AudioPlayer({
           const amplitude = Math.abs(channel[channelIndex] || 0);
           const barHeight = amplitude * halfHeight * 0.9;
 
-          // Choose color based on progress
+          // Choose color based on progress - orange for played, subtle white for unplayed
           const isPlayed = barProgress <= progressRatio;
           ctx.fillStyle = isPlayed
-            ? "rgba(255, 255, 255, 0.95)"
-            : "rgba(255, 255, 255, 0.25)";
+            ? "rgba(255, 85, 0, 1)"
+            : "rgba(255, 255, 255, 0.15)";
 
           // Top half (mirrored up from center)
           ctx.fillRect(x, halfHeight - barHeight, barWidth, barHeight);
@@ -788,10 +788,11 @@ function AudioPlayer({
         </div>
         <div className="flex items-center gap-3 w-full max-w-xl text-xs text-neutral-400">
           <span>{formatTime(currentTime)}</span>
-          <div className="flex-1 relative h-9 flex items-center z-10">
+          <div className="flex-1 relative h-9 flex items-center z-10 min-h-[36px] max-h-[36px]">
             <div
               ref={waveformRef}
               className="w-full h-full pointer-events-auto"
+              style={{ height: "36px" }}
             />
           </div>
           <span>{formatTime(duration)}</span>
