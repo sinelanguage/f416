@@ -289,16 +289,28 @@ function TopBannerPlayer({
 }) {
   const waveformRef = useRef<HTMLDivElement | null>(null);
   const wavesurferRef = useRef<WaveSurfer | null>(null);
+  const onSeekRef = useRef(onSeek);
+  const durationRef = useRef(duration);
+  const currentTimeRef = useRef(currentTime);
+  const waveformDataRef = useRef<Float32Array | null>(null);
+  const clickHandlerRef = useRef<((e: MouseEvent) => void) | null>(null);
   const [isWaveformReady, setIsWaveformReady] = useState(false);
 
-  // Initialize WaveSurfer
+  // Keep refs updated
+  useEffect(() => {
+    onSeekRef.current = onSeek;
+    durationRef.current = duration;
+    currentTimeRef.current = currentTime;
+  }, [onSeek, duration, currentTime]);
+
+  // Initialize WaveSurfer (only once)
   useEffect(() => {
     if (!waveformRef.current) return;
 
     const wavesurfer = WaveSurfer.create({
       container: waveformRef.current,
       height:
-        window.innerWidth >= 768 ? 72 : window.innerWidth >= 640 ? 56 : 48,
+        window.innerWidth >= 768 ? 90 : window.innerWidth >= 640 ? 70 : 60,
       waveColor: "rgba(255, 255, 255, 0.3)",
       progressColor: "rgba(255, 255, 255, 0.9)",
       cursorColor: "transparent",
@@ -310,12 +322,20 @@ function TopBannerPlayer({
       fillParent: true,
       normalize: false,
       hideScrollbar: true,
-      interact: false,
+      interact: false, // Disable WaveSurfer's built-in interact, use our custom handler
       backend: "WebAudio",
       // Custom render function for mirrored/reflected waveform like SoundCloud
       renderFunction: (channels, ctx) => {
+        if (!channels || !channels[0] || channels[0].length === 0) return;
+
+        // Store waveform data on first render to prevent changes during playback
+        // Only update if we don't have data yet (new track loaded)
+        if (!waveformDataRef.current) {
+          waveformDataRef.current = new Float32Array(channels[0]);
+        }
+
         const { width, height } = ctx.canvas;
-        const channel = channels[0];
+        const channel = waveformDataRef.current; // Always use stored data
         const halfHeight = height / 2;
         const barWidth = 4;
         const barGap = 3;
@@ -324,10 +344,10 @@ function TopBannerPlayer({
 
         ctx.clearRect(0, 0, width, height);
 
-        // Get current progress from WaveSurfer
-        const progress = wavesurferRef.current?.getCurrentTime() || 0;
-        const totalDuration = wavesurferRef.current?.getDuration() || 1;
-        const progressRatio = progress / totalDuration;
+        // Get current progress from external audio
+        const progress = currentTimeRef.current || 0;
+        const totalDuration = durationRef.current || 1;
+        const progressRatio = totalDuration > 0 ? progress / totalDuration : 0;
 
         for (let i = 0; i < barCount; i++) {
           const x = i * barStep;
@@ -353,35 +373,77 @@ function TopBannerPlayer({
 
     wavesurferRef.current = wavesurfer;
 
+    // Attach click handler directly to container div - simpler and more reliable
+    const container = waveformRef.current;
+    const handleClick = (e: MouseEvent) => {
+      if (!container) return;
+      e.stopPropagation();
+      const rect = container.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const ratio = Math.max(0, Math.min(1, x / rect.width));
+      if (durationRef.current && durationRef.current > 0) {
+        const seekTime = ratio * durationRef.current;
+        onSeekRef.current(seekTime);
+      }
+    };
+
+    if (container) {
+      container.addEventListener("click", handleClick);
+      container.style.cursor = "pointer";
+    }
+    clickHandlerRef.current = handleClick;
+
     // Handle ready event
     wavesurfer.on("ready", () => {
       setIsWaveformReady(true);
+      // Reset waveform data ref when new track loads
+      waveformDataRef.current = null;
     });
 
     return () => {
+      // Clean up click handler
+      if (container && clickHandlerRef.current) {
+        container.removeEventListener("click", clickHandlerRef.current);
+        clickHandlerRef.current = null;
+      }
+      // WaveSurfer cleanup will handle wrapper removal
       wavesurfer.destroy();
       wavesurferRef.current = null;
       setIsWaveformReady(false);
     };
-  }, []);
+  }, []); // Only create once
 
   // Load audio when track changes
   useEffect(() => {
     if (!wavesurferRef.current || !track?.path) return;
 
     setIsWaveformReady(false);
+    waveformDataRef.current = null; // Reset waveform data when track changes
     const audioUrl = getAssetUrl(track.path);
 
     // Load the audio file
     wavesurferRef.current.load(audioUrl);
   }, [track?.path]);
 
-  // Sync WaveSurfer progress with external audio playback
+  // Sync WaveSurfer progress with external audio playback (heavily throttled to prevent redraws)
   useEffect(() => {
     if (!wavesurferRef.current || !isWaveformReady || !duration) return;
 
     const progress = currentTime / duration;
-    wavesurferRef.current.seekTo(progress);
+    const wsDuration = wavesurferRef.current.getDuration();
+    if (!wsDuration || wsDuration === 0) return;
+
+    // Only update if change is significant (>2%) to prevent excessive redraws
+    const currentProgress = wavesurferRef.current.getCurrentTime() / wsDuration;
+    if (Math.abs(progress - currentProgress) > 0.02) {
+      // Throttle updates to max once per 100ms
+      const timeoutId = setTimeout(() => {
+        if (wavesurferRef.current && isWaveformReady) {
+          wavesurferRef.current.seekTo(progress);
+        }
+      }, 100);
+      return () => clearTimeout(timeoutId);
+    }
   }, [currentTime, duration, isWaveformReady]);
 
   // Handle responsive height
@@ -390,7 +452,7 @@ function TopBannerPlayer({
 
     const handleResize = () => {
       const height =
-        window.innerWidth >= 768 ? 72 : window.innerWidth >= 640 ? 56 : 48;
+        window.innerWidth >= 768 ? 90 : window.innerWidth >= 640 ? 70 : 60;
       if (wavesurferRef.current) {
         wavesurferRef.current.setOptions({ height });
       }
@@ -399,14 +461,6 @@ function TopBannerPlayer({
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
-
-  const handleSeekClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!duration) return;
-    const rect = (e.currentTarget as HTMLDivElement).getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const ratio = Math.max(0, Math.min(1, x / rect.width));
-    onSeek(ratio * duration);
-  };
 
   return (
     <div className="px-4 mt-4">
@@ -427,11 +481,19 @@ function TopBannerPlayer({
         </div>
 
         {/* Waveform layer - behind content but not artwork */}
-        <div
-          className="absolute left-0 right-0 sm:right-44 md:right-60 top-1/2 -translate-y-1/2 z-[5] select-none cursor-pointer px-4"
-          onClick={handleSeekClick}
-        >
-          <div ref={waveformRef} className="w-full h-12 sm:h-14 md:h-18" />
+        <div className="absolute left-0 right-0 sm:right-44 md:right-60 top-1/2 -translate-y-1/2 z-[5] select-none px-4 pointer-events-auto">
+          <div
+            ref={waveformRef}
+            className="w-full pointer-events-auto"
+            style={{
+              height:
+                window.innerWidth >= 768
+                  ? "90px"
+                  : window.innerWidth >= 640
+                  ? "70px"
+                  : "60px",
+            }}
+          />
         </div>
 
         {/* Content - above waveform */}
@@ -525,8 +587,166 @@ function AudioPlayer({
   onSeek: (time: number) => void;
   onVolume: (vol: number) => void;
 }) {
+  const waveformRef = useRef<HTMLDivElement | null>(null);
+  const wavesurferRef = useRef<WaveSurfer | null>(null);
+  const onSeekRef = useRef(onSeek);
+  const durationRef = useRef(duration);
+  const currentTimeRef = useRef(currentTime);
+  const waveformDataRef = useRef<Float32Array | null>(null);
+  const clickHandlerRef = useRef<((e: MouseEvent) => void) | null>(null);
+  const [isWaveformReady, setIsWaveformReady] = useState(false);
+
+  // Keep refs updated
+  useEffect(() => {
+    onSeekRef.current = onSeek;
+    durationRef.current = duration;
+    currentTimeRef.current = currentTime;
+  }, [onSeek, duration, currentTime]);
+
+  // Initialize WaveSurfer for bottom player (only once)
+  useEffect(() => {
+    if (!waveformRef.current) return;
+
+    const wavesurfer = WaveSurfer.create({
+      container: waveformRef.current,
+      height: 36,
+      waveColor: "rgba(255, 255, 255, 0.3)",
+      progressColor: "rgba(255, 255, 255, 0.9)",
+      cursorColor: "transparent",
+      cursorWidth: 0,
+      barWidth: 2,
+      barGap: 1,
+      barRadius: 2,
+      minPxPerSec: 1,
+      fillParent: true,
+      normalize: false,
+      hideScrollbar: true,
+      interact: false, // Disable WaveSurfer's built-in interact, use our custom handler
+      backend: "WebAudio",
+      // Custom render function for mirrored/reflected waveform like SoundCloud
+      renderFunction: (channels, ctx) => {
+        if (!channels || !channels[0] || channels[0].length === 0) return;
+
+        // Store waveform data on first render to prevent changes during playback
+        // Only update if we don't have data yet (new track loaded)
+        if (!waveformDataRef.current) {
+          waveformDataRef.current = new Float32Array(channels[0]);
+        }
+
+        const { width, height } = ctx.canvas;
+        const channel = waveformDataRef.current; // Always use stored data
+        const halfHeight = height / 2;
+        const barWidth = 3;
+        const barGap = 2;
+        const barStep = barWidth + barGap;
+        const barCount = Math.floor(width / barStep);
+
+        ctx.clearRect(0, 0, width, height);
+
+        // Get current progress from external audio
+        const progress = currentTimeRef.current || 0;
+        const totalDuration = durationRef.current || 1;
+        const progressRatio = totalDuration > 0 ? progress / totalDuration : 0;
+
+        for (let i = 0; i < barCount; i++) {
+          const x = i * barStep;
+          const barProgress = i / barCount;
+          const channelIndex = Math.floor((i / barCount) * channel.length);
+          const amplitude = Math.abs(channel[channelIndex] || 0);
+          const barHeight = amplitude * halfHeight * 0.9;
+
+          // Choose color based on progress
+          const isPlayed = barProgress <= progressRatio;
+          ctx.fillStyle = isPlayed
+            ? "rgba(255, 255, 255, 0.95)"
+            : "rgba(255, 255, 255, 0.25)";
+
+          // Top half (mirrored up from center)
+          ctx.fillRect(x, halfHeight - barHeight, barWidth, barHeight);
+
+          // Bottom half (mirrored down from center - reflection)
+          ctx.fillRect(x, halfHeight, barWidth, barHeight);
+        }
+      },
+    });
+
+    wavesurferRef.current = wavesurfer;
+
+    // Attach click handler directly to container div - simpler and more reliable
+    const container = waveformRef.current;
+    const handleClick = (e: MouseEvent) => {
+      if (!container) return;
+      e.stopPropagation();
+      const rect = container.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const ratio = Math.max(0, Math.min(1, x / rect.width));
+      if (durationRef.current && durationRef.current > 0) {
+        const seekTime = ratio * durationRef.current;
+        onSeekRef.current(seekTime);
+      }
+    };
+
+    if (container) {
+      container.addEventListener("click", handleClick);
+      container.style.cursor = "pointer";
+    }
+    clickHandlerRef.current = handleClick;
+
+    // Handle ready event
+    wavesurfer.on("ready", () => {
+      setIsWaveformReady(true);
+      // Reset waveform data ref when new track loads
+      waveformDataRef.current = null;
+    });
+
+    return () => {
+      // Clean up click handler
+      if (container && clickHandlerRef.current) {
+        container.removeEventListener("click", clickHandlerRef.current);
+        clickHandlerRef.current = null;
+      }
+      // WaveSurfer cleanup will handle wrapper removal
+      wavesurfer.destroy();
+      wavesurferRef.current = null;
+      setIsWaveformReady(false);
+    };
+  }, []); // Only create once
+
+  // Load audio when track changes
+  useEffect(() => {
+    if (!wavesurferRef.current || !track?.path) return;
+
+    setIsWaveformReady(false);
+    waveformDataRef.current = null; // Reset waveform data when track changes
+    const audioUrl = getAssetUrl(track.path);
+
+    // Load the audio file
+    wavesurferRef.current.load(audioUrl);
+  }, [track?.path]);
+
+  // Sync WaveSurfer progress with external audio playback (heavily throttled to prevent redraws)
+  useEffect(() => {
+    if (!wavesurferRef.current || !isWaveformReady || !duration) return;
+
+    const progress = currentTime / duration;
+    const wsDuration = wavesurferRef.current.getDuration();
+    if (!wsDuration || wsDuration === 0) return;
+
+    // Only update if change is significant (>2%) to prevent excessive redraws
+    const currentProgress = wavesurferRef.current.getCurrentTime() / wsDuration;
+    if (Math.abs(progress - currentProgress) > 0.02) {
+      // Throttle updates to max once per 100ms
+      const timeoutId = setTimeout(() => {
+        if (wavesurferRef.current && isWaveformReady) {
+          wavesurferRef.current.seekTo(progress);
+        }
+      }, 100);
+      return () => clearTimeout(timeoutId);
+    }
+  }, [currentTime, duration, isWaveformReady]);
+
   return (
-    <footer className="h-16 md:h-20 px-3 md:px-4 flex items-center gap-2 md:gap-4 sticky bottom-0 backdrop-blur">
+    <footer className="h-16 md:h-20 px-3 md:px-4 flex items-center gap-2 md:gap-4 sticky bottom-0 backdrop-blur z-50">
       <div className="flex items-center gap-2 md:gap-3 min-w-0 flex-1 md:flex-initial">
         <img
           src={getAssetUrl(release.cover)}
@@ -568,15 +788,12 @@ function AudioPlayer({
         </div>
         <div className="flex items-center gap-3 w-full max-w-xl text-xs text-neutral-400">
           <span>{formatTime(currentTime)}</span>
-          <input
-            aria-label="Seek"
-            type="range"
-            min={0}
-            max={Math.max(1, duration)}
-            value={Math.min(currentTime, duration)}
-            onChange={(e) => onSeek(Number(e.target.value))}
-            className="w-full h-1 accent-white bg-neutral-800 rounded"
-          />
+          <div className="flex-1 relative h-9 flex items-center z-10">
+            <div
+              ref={waveformRef}
+              className="w-full h-full pointer-events-auto"
+            />
+          </div>
           <span>{formatTime(duration)}</span>
         </div>
       </div>
@@ -734,8 +951,6 @@ export default function App() {
       audio.src = "https://www.soundjay.com/misc/sounds/button-1.mp3";
     }
 
-    audio.volume = volume;
-
     const onLoaded = () => {
       if (!currentTrack?.duration) {
         setDuration(audio.duration || 0);
@@ -776,8 +991,14 @@ export default function App() {
     currentIndex,
     currentTrackIndex,
     isPlaying,
-    volume,
   ]);
+
+  // Handle volume updates separately to avoid reloading audio
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.volume = volume;
+    }
+  }, [volume]);
 
   const handlePlayPause = () => setIsPlaying((p) => !p);
 
