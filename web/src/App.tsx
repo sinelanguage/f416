@@ -481,7 +481,7 @@ function TopBannerPlayer({
         </div>
 
         {/* Waveform layer - behind content but not artwork */}
-        <div className="absolute left-0 right-0 sm:right-44 md:right-60 top-1/2 -translate-y-1/2 z-[5] select-none px-4 pointer-events-auto">
+        <div className="absolute left-0 right-0 sm:right-44 md:right-60 top-1/2 -translate-y-1/2 z-[10] select-none px-4 pointer-events-auto">
           <div
             ref={waveformRef}
             className="w-full pointer-events-auto"
@@ -497,11 +497,11 @@ function TopBannerPlayer({
         </div>
 
         {/* Content - above waveform */}
-        <div className="relative z-20 px-4 pt-4 md:px-4 md:pt-6 pb-0 flex items-start gap-3 md:gap-6">
+        <div className="relative z-20 px-4 pt-4 md:px-4 md:pt-6 pb-0 flex items-start gap-3 md:gap-6 pointer-events-none">
           <Button
             onClick={onPlay}
             size="icon"
-            className="size-12 sm:size-14 md:size-16 rounded-full bg-white text-black hover:bg-gray-200 shrink-0"
+            className="size-12 sm:size-14 md:size-16 rounded-full bg-white text-black hover:bg-gray-200 shrink-0 pointer-events-auto"
             aria-label={isActive ? "Pause" : "Play"}
             title={isActive ? "Pause" : "Play"}
           >
@@ -512,7 +512,7 @@ function TopBannerPlayer({
             )}
           </Button>
 
-          <div className="min-w-0 flex-1">
+          <div className="min-w-0 flex-1 pointer-events-none">
             <div className="mb-2 md:mb-3">
               <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-white truncate">
                 {track ? track.title : release.title}
@@ -524,7 +524,7 @@ function TopBannerPlayer({
           </div>
 
           {/* Artwork card on the right - above waveform */}
-          <div className="hidden sm:block ml-auto mb-4">
+          <div className="hidden sm:block ml-auto mb-4 pointer-events-none">
             <img
               src={getAssetUrl(release.cover)}
               alt={`${release.title} cover`}
@@ -859,10 +859,19 @@ export default function App() {
   const [bannerIndex, setBannerIndex] = useState<number>(0);
   const [bannerTrackIndex, setBannerTrackIndex] = useState<number>(0);
   const [backgroundIndex, setBackgroundIndex] = useState<number>(0);
+  
+  // Separate state for banner player
+  const [bannerIsPlaying, setBannerIsPlaying] = useState(false);
+  const [bannerCurrentTime, setBannerCurrentTime] = useState(0);
+  const [bannerDuration, setBannerDuration] = useState(0);
+  const bannerAudioRef = useRef<HTMLAudioElement | null>(null);
 
-  // Lazily create audio element once
+  // Lazily create audio elements once
   if (audioRef.current === null) {
     audioRef.current = new Audio();
+  }
+  if (bannerAudioRef.current === null) {
+    bannerAudioRef.current = new Audio();
   }
 
   const currentRelease = useMemo(() => RELEASES[currentIndex], [currentIndex]);
@@ -975,6 +984,11 @@ export default function App() {
     audio.addEventListener("ended", onEnded);
 
     if (isPlaying) {
+      // Pause banner player when bottom player starts playing
+      if (bannerAudioRef.current && bannerIsPlaying) {
+        bannerAudioRef.current.pause();
+        setBannerIsPlaying(false);
+      }
       audio.play().catch(() => setIsPlaying(false));
     } else {
       audio.pause();
@@ -991,6 +1005,7 @@ export default function App() {
     currentIndex,
     currentTrackIndex,
     isPlaying,
+    bannerIsPlaying,
   ]);
 
   // Handle volume updates separately to avoid reloading audio
@@ -999,6 +1014,57 @@ export default function App() {
       audioRef.current.volume = volume;
     }
   }, [volume]);
+
+  // Separate audio handling for banner player
+  useEffect(() => {
+    const audio = bannerAudioRef.current!;
+
+    // Use actual track audio if available
+    if (bannerTrack?.path) {
+      audio.src = getAssetUrl(bannerTrack.path);
+      setBannerDuration(bannerTrack.duration);
+    } else {
+      // Fallback to placeholder if no track
+      audio.src = "https://www.soundjay.com/misc/sounds/button-1.mp3";
+    }
+
+    const onLoaded = () => {
+      if (!bannerTrack?.duration) {
+        setBannerDuration(audio.duration || 0);
+      }
+    };
+    const onTime = () => setBannerCurrentTime(audio.currentTime || 0);
+    const onEnded = () => {
+      setBannerIsPlaying(false);
+    };
+
+    audio.addEventListener("loadedmetadata", onLoaded);
+    audio.addEventListener("timeupdate", onTime);
+    audio.addEventListener("ended", onEnded);
+
+    if (bannerIsPlaying) {
+      // Pause bottom player when banner starts playing
+      if (audioRef.current && isPlaying) {
+        audioRef.current.pause();
+        setIsPlaying(false);
+      }
+      audio.play().catch(() => setBannerIsPlaying(false));
+    } else {
+      audio.pause();
+    }
+
+    return () => {
+      audio.removeEventListener("loadedmetadata", onLoaded);
+      audio.removeEventListener("timeupdate", onTime);
+      audio.removeEventListener("ended", onEnded);
+    };
+  }, [
+    bannerRelease,
+    bannerTrack,
+    bannerIndex,
+    bannerTrackIndex,
+    bannerIsPlaying,
+  ]);
 
   const handlePlayPause = () => setIsPlaying((p) => !p);
 
@@ -1040,29 +1106,12 @@ export default function App() {
     setCurrentTime(time);
   };
   const handleBannerPlay = () => {
-    if (
-      currentIndex === bannerIndex &&
-      currentTrackIndex === bannerTrackIndex
-    ) {
-      setIsPlaying((p) => !p);
-    } else {
-      setCurrentIndex(bannerIndex);
-      setCurrentTrackIndex(bannerTrackIndex);
-      setIsPlaying(true);
-    }
+    setBannerIsPlaying((p) => !p);
   };
   const handleBannerSeek = (time: number) => {
-    if (
-      currentIndex !== bannerIndex ||
-      currentTrackIndex !== bannerTrackIndex
-    ) {
-      setCurrentIndex(bannerIndex);
-      setCurrentTrackIndex(bannerTrackIndex);
-      setIsPlaying(true);
-    }
-    const audio = audioRef.current!;
+    const audio = bannerAudioRef.current!;
     audio.currentTime = time;
-    setCurrentTime(time);
+    setBannerCurrentTime(time);
   };
   const handleVolume = (vol: number) => {
     setVolume(vol);
@@ -1118,24 +1167,9 @@ export default function App() {
           <TopBannerPlayer
             release={bannerRelease}
             track={bannerTrack}
-            isActive={
-              isPlaying &&
-              currentIndex === bannerIndex &&
-              currentTrackIndex === bannerTrackIndex
-            }
-            currentTime={
-              currentIndex === bannerIndex &&
-              currentTrackIndex === bannerTrackIndex
-                ? currentTime
-                : 0
-            }
-            duration={
-              bannerTrack?.duration ||
-              (currentIndex === bannerIndex &&
-              currentTrackIndex === bannerTrackIndex
-                ? duration
-                : 0)
-            }
+            isActive={bannerIsPlaying}
+            currentTime={bannerCurrentTime}
+            duration={bannerDuration}
             onPlay={handleBannerPlay}
             onSeek={handleBannerSeek}
           />
