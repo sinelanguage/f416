@@ -278,6 +278,9 @@ function TopBannerPlayer({
   duration,
   onPlay,
   onSeek,
+  onPrev,
+  onNext,
+  trackIndex,
 }: {
   release: Release;
   track: Track | null;
@@ -286,7 +289,13 @@ function TopBannerPlayer({
   duration: number;
   onPlay: () => void;
   onSeek: (time: number) => void;
+  onPrev: () => void;
+  onNext: () => void;
+  trackIndex: number;
 }) {
+  const hasTracks = release?.tracks && release.tracks.length > 0;
+  const canGoPrev = hasTracks && trackIndex > 0;
+  const canGoNext = hasTracks && trackIndex < (release.tracks?.length || 0) - 1;
   const waveformRef = useRef<HTMLDivElement | null>(null);
   const wavesurferRef = useRef<WaveSurfer | null>(null);
   const onSeekRef = useRef(onSeek);
@@ -498,19 +507,47 @@ function TopBannerPlayer({
 
         {/* Content - above waveform */}
         <div className="relative z-20 px-4 pt-4 md:px-4 md:pt-6 pb-0 flex items-start gap-3 md:gap-6 pointer-events-none">
-          <Button
-            onClick={onPlay}
-            size="icon"
-            className="size-12 sm:size-14 md:size-16 rounded-full bg-white text-black hover:bg-gray-200 shrink-0 pointer-events-auto"
-            aria-label={isActive ? "Pause" : "Play"}
-            title={isActive ? "Pause" : "Play"}
-          >
-            {isActive ? (
-              <Pause className="size-6 sm:size-7 md:size-8" />
-            ) : (
-              <Play className="size-6 sm:size-7 md:size-8" />
-            )}
-          </Button>
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0 pointer-events-auto">
+            <button
+              onClick={onPrev}
+              disabled={!canGoPrev}
+              aria-label="Previous track"
+              title="Previous track"
+              className={`size-8 sm:size-10 md:size-12 flex items-center justify-center transition-colors ${
+                canGoPrev
+                  ? "text-white hover:text-neutral-300"
+                  : "text-neutral-600 cursor-not-allowed"
+              }`}
+            >
+              <SkipBack className="size-5 sm:size-6 md:size-7" />
+            </button>
+            <Button
+              onClick={onPlay}
+              size="icon"
+              className="size-12 sm:size-14 md:size-16 rounded-full bg-white text-black hover:bg-gray-200 shrink-0"
+              aria-label={isActive ? "Pause" : "Play"}
+              title={isActive ? "Pause" : "Play"}
+            >
+              {isActive ? (
+                <Pause className="size-6 sm:size-7 md:size-8" />
+              ) : (
+                <Play className="size-6 sm:size-7 md:size-8" />
+              )}
+            </Button>
+            <button
+              onClick={onNext}
+              disabled={!canGoNext}
+              aria-label="Next track"
+              title="Next track"
+              className={`size-8 sm:size-10 md:size-12 flex items-center justify-center transition-colors ${
+                canGoNext
+                  ? "text-white hover:text-neutral-300"
+                  : "text-neutral-600 cursor-not-allowed"
+              }`}
+            >
+              <SkipForward className="size-5 sm:size-6 md:size-7" />
+            </button>
+          </div>
 
           <div className="min-w-0 flex-1 pointer-events-none">
             <div className="mb-2 md:mb-3">
@@ -860,7 +897,7 @@ export default function App() {
   const [bannerIndex, setBannerIndex] = useState<number>(0);
   const [bannerTrackIndex, setBannerTrackIndex] = useState<number>(0);
   const [backgroundIndex, setBackgroundIndex] = useState<number>(0);
-  
+
   // Separate state for banner player
   const [bannerIsPlaying, setBannerIsPlaying] = useState(false);
   const [bannerCurrentTime, setBannerCurrentTime] = useState(0);
@@ -1114,6 +1151,28 @@ export default function App() {
     audio.currentTime = time;
     setBannerCurrentTime(time);
   };
+  const handleBannerPrev = () => {
+    if (bannerRelease?.tracks && bannerRelease.tracks.length > 0) {
+      // If we're not on the first track, go to previous track
+      if (bannerTrackIndex > 0) {
+        setBannerTrackIndex(bannerTrackIndex - 1);
+        return;
+      }
+    }
+    // Otherwise stay on first track (or reset to 0)
+    setBannerTrackIndex(0);
+  };
+  const handleBannerNext = () => {
+    if (bannerRelease?.tracks && bannerRelease.tracks.length > 0) {
+      // If we're not on the last track, go to next track
+      if (bannerTrackIndex < bannerRelease.tracks.length - 1) {
+        setBannerTrackIndex(bannerTrackIndex + 1);
+        return;
+      }
+    }
+    // Otherwise stay on last track (or reset to 0)
+    setBannerTrackIndex(0);
+  };
   const handleVolume = (vol: number) => {
     setVolume(vol);
     const audio = audioRef.current!;
@@ -1173,6 +1232,9 @@ export default function App() {
             duration={bannerDuration}
             onPlay={handleBannerPlay}
             onSeek={handleBannerSeek}
+            onPrev={handleBannerPrev}
+            onNext={handleBannerNext}
+            trackIndex={bannerTrackIndex}
           />
 
           <AlbumGrid
